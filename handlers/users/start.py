@@ -257,39 +257,31 @@ async def get_user_command(message: types.Message, state: FSMContext):
     lang = await get_lang(message.from_user.id)
     command = message.text
     if command in ["⚙️ Sozlamalar", "⚙️ Настройки", "⚙️ Settings"]:
+        markup = await settings_keyboard(lang)
         if lang == "uz":
-            markup = await language_keyboard()
-            await message.answer(text="Tilni o'zgartirish ♻️", reply_markup=markup)
-        elif lang == "ru":
-            markup = await language_keyboard()
-            await message.answer(text="Изменить язык ♻️", reply_markup=markup)
+            await message.answer(text="Kerakli buyruqni tanlang 👇", reply_markup=markup)
         elif lang == "en":
-            markup = await language_keyboard()
-            await message.answer(text="Change the language ♻️", reply_markup=markup)
-        await state.set_state("set_lang")
-    elif command in ["✍️ Fikr qoldirish", "✍️ Feedback", "✍️ Обратная связь"]:
+            await message.answer(text="Choose the command you want 👇", reply_markup=markup)
+        elif lang == "ru":
+            await message.answer(text="Выберите нужную команду 👇", reply_markup=markup)
+        await state.set_state("settings")
+    elif command in ["📞 Aloqa va manzillar", "📞 Contact and addresses", "📞 Контакты и адреса"]:
         lang = await get_lang(message.from_user.id)
-        markup = await back_keyboard(lang)
-        if lang == "uz":
-            await message.answer("🖋 O'z fikr-mulohaza, shikoyat yoki takliflaringizni yozing. Yoki ovozli, video yoki foto xabar yuboring", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("🖋 Write your feedback, complaint or wish. Or send a voice, video or photo message", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("🖋 Напишите свой фидбэк, жалобу или пожелание. Либо отправьте голосовое, видео либо фото сообщение", reply_markup=markup)
-        await state.set_state("get_feedback")      
-    elif command in ["ℹ️ Biz haqimizda", "ℹ️ About us", "ℹ️ О нас"]:
         markup = await about_menu(lang)
-        markup_back = await back_keyboard(lang)
         if lang == "uz":
-            await message.answer(text="Assalamu Alaykum,\n\n\"DunyaBunya\" (Dunyoni Qurish) kompaniyamiz haqida qisqacha ma'lumot: \n\nAvval, uzoq yillar  \"17-18 do'konlar\" va keyin \"JomiyStroy\" nomlari ostida muvaffaqiyatli faoliyat olib borgan qurilish mollari do\'konimiz qurilish bozorida 10 yildan oshiq tajribaga egadir.\n\nBizning qurilish mollari do'koni ulgurji (Оптом) takliflarning ko'pligi va hilma-hilligi bilan ajralib turadi. Buni biz bilan ishlaydigan qurilish kompaniyalari va quruvchi rahbarlar ham tasdiqlashi mumkin.\n\nEndi esa Bizga va Siz Hurmatli Mijozlarimizga yangi nom, yangi brand va yangi ko'rinish muborak bo'lishini Yaratgan ALLOH dan so'ragan holatda,  an'anaviy va internet do'konlari tarmoqlarimizni rivojlantirishga bel bog'ladik.\n\nBizni yangi formatda kuzatib boring, mahsulotlarni narxlari bilan kanalimizda kuzatib, buyurtma bering!\n@dunyabunya", reply_markup=markup_back)
-            await message.answer(text="Bizni ijtimoiy tarmoqlarda kuzating 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer(text="Assalamu Alaykum,\n\n\"DunyaBunya\" (Dunyoni Qurish) kompaniyamiz haqida qisqacha ma'lumot: \n\nAvval, uzoq yillar  \"17-18 do'konlar\" va keyin \"JomiyStroy\" nomlari ostida muvaffaqiyatli faoliyat olib borgan qurilish mollari do\'konimiz qurilish bozorida 10 yildan oshiq tajribaga egadir.\n\nBizning qurilish mollari do'koni ulgurji (Оптом) takliflarning ko'pligi va hilma-hilligi bilan ajralib turadi. Buni biz bilan ishlaydigan qurilish kompaniyalari va quruvchi rahbarlar ham tasdiqlashi mumkin.\n\nEndi esa Bizga va Siz Hurmatli Mijozlarimizga yangi nom, yangi brand va yangi ko'rinish muborak bo'lishini Yaratgan ALLOH dan so'ragan holatda,  an'anaviy va internet do'konlari tarmoqlarimizni rivojlantirishga bel bog'ladik.\n\nBizni yangi formatda kuzatib boring, mahsulotlarni narxlari bilan kanalimizda kuzatib, buyurtma bering!\n@dunyabunya", reply_markup=markup_back)
-            await message.answer(text="Следите за нами в социальных сетях 👇", reply_markup=markup)
+            await message.answer("Aloqa uchun raqamlar\n+998999410325\n+998999410325\nBizni ijtimoiy tarmoqlarda kuzating 👇", reply_markup=markup)
         elif lang == "en":
-            await message.answer(text="Assalamu Alaykum,\n\n\"DunyaBunya\" (Dunyoni Qurish) kompaniyamiz haqida qisqacha ma'lumot: \n\nAvval, uzoq yillar  \"17-18 do'konlar\" va keyin \"JomiyStroy\" nomlari ostida muvaffaqiyatli faoliyat olib borgan qurilish mollari do\'konimiz qurilish bozorida 10 yildan oshiq tajribaga egadir.\n\nBizning qurilish mollari do'koni ulgurji (Оптом) takliflarning ko'pligi va hilma-hilligi bilan ajralib turadi. Buni biz bilan ishlaydigan qurilish kompaniyalari va quruvchi rahbarlar ham tasdiqlashi mumkin.\n\nEndi esa Bizga va Siz Hurmatli Mijozlarimizga yangi nom, yangi brand va yangi ko'rinish muborak bo'lishini Yaratgan ALLOH dan so'ragan holatda,  an'anaviy va internet do'konlari tarmoqlarimizni rivojlantirishga bel bog'ladik.\n\nBizni yangi formatda kuzatib boring, mahsulotlarni narxlari bilan kanalimizda kuzatib, buyurtma bering!\n@dunyabunya", reply_markup=markup_back)
-            await message.answer(text="Follow us on social networks 👇", reply_markup=markup)
-        await state.set_state("get_command_about") 
+            await message.answer("Contact numbers\n+998999410325\n+998999410325\nFollow us on social networks 👇", reply_markup=markup)
+        elif lang == "ru":
+            await message.answer("Контактные телефоны\n+998999410325\n+998999410325\nПодпишитесь на нас в социальных сетях 👇", reply_markup=markup)
+    elif command in ["ℹ️ Biz haqimizda", "ℹ️ About us", "ℹ️ О нас"]:
+        markup = await user_menu(lang)
+        if lang == "uz":
+            await message.answer(text="Biz keramika sohasidagi korxonamiz. 2005 yildan beri faoliyatimizni yuritamizBizdan kerkli maxsulotlar xariq qilishingiz mumkin.", reply_markup=markup)
+        elif lang == "ru":
+            await message.answer(text="Мы предприятие в области керамики. Мы работаем с 2005 года. У нас вы можете купить специальные товары.", reply_markup=markup)
+        elif lang == "en":
+            await message.answer(text="We are an enterprise in the field of ceramics. We have been operating since 2005. You can buy special products from us.", reply_markup=markup)
     elif command in ["🛍 Buyurtma berish", "🛍 Order now", "🛍 Заказать"]:
         markup = await order_type(lang)
         if lang == "uz":
@@ -359,6 +351,144 @@ async def get_user_command(message: types.Message, state: FSMContext):
                 text += f"\n<b>Jami: </b>{summa}\n\n"
         await message.answer(text)
 
+
+@dp.message_handler(content_types=types.ContentTypes.TEXT, state="settings")
+async def get_settings_message(message: types.Message, state:FSMContext):
+    lang = await get_lang(message.from_user.id)
+    if "⬅️" in  message.text:
+        markup = await user_menu(lang)
+        if lang == "uz":
+            await message.answer("Kerakli bo'limni tanlang 👇", reply_markup=markup)
+        elif lang == "en":
+            await message.answer("Select the required button👇", reply_markup=markup)
+        elif lang == "ru":
+            await message.answer("Выберите нужную кнопку👇", reply_markup=markup)
+        await state.set_state("get_command")
+    elif message.text in ["🔄 Tilni o'zgartirish", "🔄 Изменить язык", "🔄 Change language"]:
+        if lang == "uz":
+            markup = await language_keyboard()
+            await message.answer(text="Tilni o'zgartirish ♻️\nKerakli tilni tanlang 👇", reply_markup=markup)
+        elif lang == "en":
+            markup = await language_keyboard()
+            await message.answer(text="Change language ♻️\nChoose the language you want 👇", reply_markup=markup)
+        elif lang == "ru":
+            markup = await language_keyboard()
+            await message.answer(text="Изменить язык ♻️\nВыберите нужный язык 👇", reply_markup=markup)
+        await state.set_state("set_lang")
+    elif message.text in ["📞 Raqamni o'zgartirish", "📞 Изменить номер телефона", "📞 Change phone number"]:
+        markup = await phone_keyboard(lang)
+        if lang == "uz":
+            await message.answer("Telefon raqamininfizni xalqaro formatda(<b>998YYXXXXXXX</b>) kiriting. Yoki raqamni ulashing👇", reply_markup=markup)
+        elif lang == "en":
+            await message.answer("Enter your phone number in international format (<b>998YYXXXXXX</b>). Or share the number 👇", reply_markup=markup)
+        elif lang == "ru":
+            await message.answer("Введите свой номер телефона в международном формате (<b>998YYXXXXXX</b>). Или поделитесь номером👇", reply_markup=markup)
+        await state.set_state("get_phone_number_settings")            
+
+
+@dp.message_handler(content_types=types.ContentTypes.CONTACT, state="get_phone_number_settings")
+async def get_phone(message: types.Message, state: FSMContext):
+    if message.contact:
+        phone = message.contact.phone_number[1:]
+        user = await get_user(message.from_user.id)
+        user.new_phone = phone
+        otp = generateOTP()
+        # send_sms(otp=otp, phone=phone)
+        user.otp = otp
+        user.save()
+        print(user.otp)
+        lang = await get_lang(message.from_user.id)
+        keyboard = await back_keyboard(lang)
+        if lang == "uz":
+            await message.answer(text=f"<b>{user.new_phone}</b> raqamiga yuborilgan tasdiqlash kodini kiriting", parse_mode='HTML', reply_markup=keyboard)
+        if lang == "ru":
+            await message.answer(text=f"Введите код подтверждения, отправленный на номер <b>{user.new_phone}</b>.", parse_mode='HTML', reply_markup=keyboard)
+        if lang == "en":
+            await message.answer(text=f"Enter the verification code sent to <b>{user.new_phone}</b>", parse_mode='HTML', reply_markup=keyboard)
+        await state.set_state("get_otp_settings")
+    
+
+@dp.message_handler(content_types=types.ContentTypes.TEXT, state="get_phone_number_settings")
+async def get_phone(message: types.Message, state: FSMContext):
+    if "⬅️️" == message.text[0:2]:
+        print(message.text[0:2])
+        lang = await get_lang(message.from_user.id)
+        if isValid(message.text):
+            phone = message.text
+            user = await get_user(message.from_user.id)
+            user.new_phone = phone
+            otp = generateOTP()
+            # send_sms(otp=otp, phone=phone)
+            user.otp = otp
+            user.save()
+            print(user.otp)
+            keyboard = await back_keyboard(lang)
+            if lang == "uz":
+                await message.answer(text=f"<b>{user.new_phone}</b> raqamiga yuborilgan tasdiqlash kodini kiriting", parse_mode='HTML', reply_markup=keyboard)
+            if lang == "en":
+                await message.answer(text=f"Введите код подтверждения, отправленный на номер <b>{user.new_phone}</b>.", parse_mode='HTML', reply_markup=keyboard)
+            if lang == "ru":
+                await message.answer(text=f"Enter the verification code sent to <b>{user.new_phone}</b>", parse_mode='HTML', reply_markup=keyboard)
+            await state.set_state("get_otp_settings")
+        else:
+            markup = await phone_keyboard(lang)
+            if lang == "uz":
+                await message.answer("Telefon raqamininfizni xalqaro formatda(<b>998YYXXXXXXX</b>) kiriting. Yoki raqamni ulashing👇", reply_markup=markup)
+            elif lang == "en":
+                await message.answer("Enter your phone number in international format (<b>998YYXXXXXX</b>). Or share the number 👇", reply_markup=markup)
+            elif lang == "ru":
+                await message.answer("Введите свой номер телефона в международном формате (<b>998YYXXXXXX</b>). Или поделитесь номером👇", reply_markup=markup)
+            await state.set_state("get_phone_number_settings")            
+    else:
+        lang = await get_lang(message.from_user.id)
+        # if message.text == "⬅️️  Назад" or message.text == "⬅️️  Orqaga" or message.text == "⬅️️  Back":
+        markup = await settings_keyboard(lang)
+        if lang == "uz":
+            await message.answer(text="Kerakli buyruqni tanlang 👇", reply_markup=markup)
+        elif lang == "en":
+            await message.answer(text="Click the required button 👇", reply_markup=markup)
+        elif lang == "ru":
+            await message.answer(text="Выберите нужную команду 👇", reply_markup=markup)
+        await state.set_state("settings")
+
+
+@dp.message_handler(content_types=types.ContentTypes.TEXT, state="get_otp_settings")
+async def get_phone(message: types.Message, state: FSMContext):
+    user = await get_user(message.from_user.id)
+    lang = user.lang
+    if "⬅️️" in message.text: 
+        markup = await phone_keyboard(lang)
+        if lang == "uz":
+            await message.answer("Telefon raqamininfizni xalqaro formatda(<b>998YYXXXXXXX</b>) kiriting. Yoki raqamni ulashing👇", reply_markup=markup)
+        elif lang == "en":
+            await message.answer("Enter your phone number in international format (<b>998YYXXXXXX</b>). Or share the number 👇", reply_markup=markup)
+        elif lang == "ru":
+            await message.answer("Введите свой номер телефона в международном формате (<b>998YYXXXXXX</b>). Или поделитесь номером👇", reply_markup=markup)
+        await state.set_state("get_phone_number_settings")            
+    else:
+        if message.text == user.otp:
+            user.phone = user.new_phone
+            user.save()
+            markup = await settings_keyboard(lang)
+            if lang == "uz":
+                await message.answer("✅ Telefon raqami o'zgartirildi. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
+            elif lang == "en":
+                await message.answer("✅Phone number has been changed. Choose the section you want👇", reply_markup=markup)
+            elif lang == "ru":
+                await message.answer("✅ Номер телефона изменен. Пожалуйста, выберите нужный раздел 👇", reply_markup=markup)
+            await state.set_state("settings")
+        else:
+            lang = await get_lang(message.from_user.id)
+            markup = await back_keyboard(lang)
+            if lang == "uz":
+                await message.answer("⚠️ Yuborilgan tasdiqlash kodi xato. Qayta urinib ko'ring", reply_markup=markup)
+            elif lang == "en":
+                await message.answer("⚠️ The verification code sent is incorrect. Try again", reply_markup=markup)
+            elif lang == "ru":
+                await message.answer("⚠️ Присланный проверочный код неверный. Попробуйте еще раз", reply_markup=markup)
+            await state.set_state("get_otp_settings")
+ 
+ 
 @dp.message_handler(state="set_lang")
 async def set_language(message: types.Message, state: FSMContext):
     data = message.text
@@ -372,14 +502,14 @@ async def set_language(message: types.Message, state: FSMContext):
     user.lang = data
     user.save()
     lang = await get_lang(message.from_user.id)
-    markup = await user_menu(lang)
+    markup = await settings_keyboard(lang)
     if lang == "uz":
         await message.answer("Til o'zgariltirildi ✅.\nKerakli bo'limni tanlang 👇", reply_markup=markup)
     elif lang == "en":
-        await message.answer("The language has been changed ✅.\nClick the required button👇", reply_markup=markup)
+        await message.answer("The language has been changed ✅.\nClick the required button 👇", reply_markup=markup)
     elif lang == "ru":
         await message.answer("Язык изменен ✅.\nНажмите нужную кнопку👇", reply_markup=markup)
-    await state.set_state("get_command")
+    await state.set_state("settings")
 
 
 @dp.message_handler(state="get_feedback")
