@@ -71,11 +71,9 @@ async def bot_start(message: types.Message, state: FSMContext):
     else:
         args = message.get_args()
         payload = decode_payload(args)
-        print("AAAAAAAAAAAAA", payload)
         if payload != '':
             await add_user(user_id=message.from_user.id, referal_user=payload)
         else:
-            print("AAAAAAAAAAAAA", payload)
             await add_user(user_id=message.from_user.id, referal_user="no_referal")
         markup =await language_keyboard()
         await message.answer(f"Assalomu alaykum, {message.from_user.first_name}👋. \nKerakli tilni tanlang 👇\n\nHello, {message.from_user.first_name}👋. \nChoose the language you need 👇\n\nЗдравствуйте, {message.from_user.first_name}👋. \nВыберите нужный язык 👇", 
@@ -301,26 +299,31 @@ async def get_user_command(message: types.Message, state: FSMContext):
         elif lang == "ru":
             await message.answer(text="Выберите тип услуги", reply_markup=markup)
         await state.set_state("get_service_type")
-    elif command in ["📥  Savat", "📥  Cart", "📥  Корзина"]:
-        text = await get_carts(message.from_id)
-        if text is not None:
-            cart_test = await check_cart(message.from_id)
-            if cart_test:
-                markup = await cart_keyboard(lang=lang, user_id=message.from_id)
-                await message.answer(text=text, reply_markup=markup, parse_mode='HTML')
-            else:
-                go_m = await go_order(lang)
-                markup = await back_keyboard(lang)
-                if lang == "uz":
-                    await message.answer(text, reply_markup=markup)
-                    await message.answer("Xaridni boshlang ", reply_markup=go_m)
-                elif lang == "ru":
-                    await message.answer(text, reply_markup=markup)
-                    await message.answer("Начать покупки", reply_markup=go_m)
-                elif lang == "en":
-                    await message.answer(text, reply_markup=markup)
-                    await message.answer("Start shopping", reply_markup=go_m)
-        await state.set_state("get_cart_command")
+    elif command in ["💎 Bonus", "💎 Бонус"]:
+        markup = await user_menu(lang)
+        link = await get_start_link(f'{message.from_user.id}', encode=True)
+        user = await get_user(message.from_user.id)
+        user.referal = link
+        user.save()
+        text = ""
+        if lang == "uz":
+           text = f"Bonusga ega bo'lish uchun 2xil usul mavjud:\n\n1) Tanga to'plash, Ya'ni har 1millionlik savdo uchun 1tanga\n2)Referal orqali do'stingizni taklif qilib, uning 1-xaridi 5mlnni tashkil qilsa sizga 1 tanga beriladi\n\nSizning referal havolangiz: {link}"
+        if lang == "en":
+            text = "There are 2 ways to get a bonus:\n\n1) Accumulating coins, that is, 1 coin for every 1 million sales\n2) You will get 1 coin if you invite your friend through referral and his 1st purchase is 5 million will be given\n\nYour referral link: {link}"
+        if lang == "ru":
+            text = "Есть 2 способа получить бонус:\n\n1) Накопление монет, то есть 1 монета за каждый 1 миллион продаж\n2) Вы получите 1 монету, если пригласите своего друга по рефералу и его 1-я покупка составит 5 миллионов будет предоставлена\n\nВаша реферальная ссылка: {link}"
+        await message.answer(text = text, reply_markup=markup)
+        await state.set_state("get_command")
+    elif command in ["💰 Keshbeklar haqida ma'lumot", "💰 Information about cashbacks", "💰 Информация о кэшбэках"]:
+        user = await get_user(message.from_user.id)
+        coins = user.coins
+        markup = await user_menu(lang) 
+        if lang == "uz":
+            await message.answer(f"Sizda hozirda {coins} tanga bor.\nTangani qanday ishkatishni tez orada hal qilamiz", reply_markup=markup)
+        if lang == "ru":
+            await message.answer(f"В настоящее время у вас есть {coins} монет.\nСкоро мы решим, как добывать монету.", reply_markup=markup)
+        if lang == "en":
+            await message.answer(f"You currently have {coins} coins.\nWe will decide how to mine the coin soon", reply_markup=markup)
     elif command in ["🗂 Buyurtmalar tarixi", "🗂 Order history", "🗂 История заказов"]:
         summa = 0
         orders = await get_orders(message.from_id)

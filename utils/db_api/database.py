@@ -10,7 +10,10 @@ from datetime import timedelta
 def add_user(user_id, referal_user):
     try:
         user, created = User.objects.get_or_create(user_id=user_id)
-        user.referal_user = referal_user
+        if user.referal_user:
+            pass
+        else:
+            user.referal_user = referal_user
         user.save()
         return user
     except Exception as exx:

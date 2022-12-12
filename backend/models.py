@@ -16,6 +16,8 @@ class User(models.Model):
     phone = models.CharField(max_length=20, null=True, blank=True)
     new_phone = models.CharField(max_length=20, null=True, blank=True)
     otp = models.CharField(max_length=20, null=True, blank=True)
+    coins = models.IntegerField(default=0)
+    orders = models.IntegerField(default=0)
     
     
     
