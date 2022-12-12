@@ -11,8 +11,14 @@ class User(models.Model):
     name = models.CharField(max_length=500, null=True, blank=True)
     lang = models.CharField(max_length=20, null=True, blank=True)
     order_type = models.CharField(max_length=25, null=True, blank=True)
-
-
+    referal = models.CharField(max_length=500, null=True, blank=True)
+    referal_user = models.CharField(max_length=500, null=True, blank=True)
+    phone = models.CharField(max_length=20, null=True, blank=True)
+    new_phone = models.CharField(max_length=20, null=True, blank=True)
+    otp = models.CharField(max_length=20, null=True, blank=True)
+    
+    
+    
 class Category(models.Model):
     name_uz = models.CharField(max_length=500, null=True, blank=True)
     name_en = models.CharField(max_length=500, null=True, blank=True)
