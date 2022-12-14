@@ -141,6 +141,54 @@ async def go_order(lang):
 #     markup = InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 #     return markup
 
+
+async def category_keyboard(lang):
+    texts = []
+    categories = Category.objects.all()
+    markup = InlineKeyboardMarkup(row_width=2)            
+    for i in categories:
+        if lang == "uz":
+            markup.insert(InlineKeyboardButton(text=f"{i.name_uz}", callback_data=i.id))
+            texts = ["Orqaga"]
+        elif lang == "ru":
+            markup.insert(InlineKeyboardButton(text=f"{i.name_ru}", callback_data=i.id))
+            texts = ["Назад"]
+        elif lang == "en":
+            markup.insert(InlineKeyboardButton(text=f"{i.name_en}", callback_data=i.id))
+            texts = ["Back"]
+    markup.add(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))
+    return markup
+
+
+async def product_keyboard(lang, cat_id):
+    texts = []
+    products = Product.objects.filter(category__id=cat_id).all()
+    markup = InlineKeyboardMarkup(row_width=2)
+    if products:            
+        for i in products:
+            if lang == "uz":
+                markup.insert(InlineKeyboardButton(text=f"{i.name_uz}", callback_data=i.id))
+                texts = ["Orqaga"]
+            elif lang == "ru":
+                markup.insert(InlineKeyboardButton(text=f"{i.name_ru}", callback_data=i.id))
+                texts = ["Назад"]
+            elif lang == "en":
+                markup.insert(InlineKeyboardButton(text=f"{i.name_en}", callback_data=i.id))
+                texts = ["Back"]
+        markup.add(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))
+    else:
+        if lang == "uz":
+            texts = ["Orqaga"]
+        elif lang == "ru":
+            texts = ["Назад"]
+        elif lang == "en":
+            texts = ["Back"]
+        markup.add(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))        
+    return markup
+
+
+
+
 async def order_keyboard(cart_id, lang):
     texts = []
     if lang == "uz":
@@ -161,59 +209,3 @@ async def order_keyboard(cart_id, lang):
     markup.row(InlineKeyboardButton(text=f"📥 {texts[0]} ", callback_data=f"confirm-{cart.id}"))
     markup.row(InlineKeyboardButton(text="⬅️ Back ", callback_data=f"cancel-{cart.id}"))
     return markup
-
-
-
-# async def back_admin_menu():
-#     markup = InlineKeyboardMarkup(
-#         inline_keyboard=[
-#             [
-#                 InlineKeyboardButton(text="🔙 Orqaga", callback_data=f"back_admin"),
-#             ],
-#         ]
-#     )
-#     return markup
-
-
-# async def doctor_in_admin():
-#     markup = InlineKeyboardMarkup(
-#         inline_keyboard=[
-#             [InlineKeyboardButton(text="🗓 Bugungi kungi keshbekni ko'rish", callback_data="kash_today")],
-#             [InlineKeyboardButton(text="📅 Alohida kun uchun keshbekni ko'rish", callback_data="kash_day")],
-#             [InlineKeyboardButton(text="📆 Shu oy uchun keshbekni ko'rish", callback_data="kash_this_month")],
-#             [InlineKeyboardButton(text="🗒 Alohida oy uchun keshbekni ko'rish", callback_data="kash_month")],
-#             [InlineKeyboardButton(text="🔙 Orqaga", callback_data=f"back_admin")],
-#         ]
-#     )
-#     return markup
-
-
-# async def back_keyboard():
-#     keyboard = ReplyKeyboardMarkup()
-#     key1 = KeyboardButton(text="⬅️ Bekor qilish")
-#     keyboard.add(key1)
-#     keyboard.resize_keyboard = True
-#     return keyboard
-
-
-# async def ask_keyboard():
-#     keyboard = ReplyKeyboardMarkup()
-#     key1 = KeyboardButton(text="💵 Avans so'rash")
-#     keyboard.add(key1)
-#     keyboard.resize_keyboard = True
-#     return keyboard
-
-
-# async def admin_menu():
-#     keyboard = ReplyKeyboardMarkup(row_width=2)
-#     key1 = KeyboardButton(text="Eslatma qo'shish")
-#     keyboard.add(key1)
-#     keyboard.resize_keyboard = True
-#     return keyboard
-
-# async def client_keys():
-#     keyboard = ReplyKeyboardMarkup(row_width=2)
-#     key1 = KeyboardButton(text="Keyingi to'lovni ko'rish")
-#     keyboard.add(key1)
-#     keyboard.resize_keyboard = True
-#     return keyboard

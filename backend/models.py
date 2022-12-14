@@ -56,12 +56,17 @@ class SubCategory(models.Model):
             return ''
 
 
+class Color(models.Model):
+    color = models.CharField(max_length=50)
+    image = models.ImageField()
+
+
 class Product(models.Model):
     name_uz = models.CharField(max_length=500, null=True, blank=True)
     name_en = models.CharField(max_length=500, null=True, blank=True)
     name_ru = models.CharField(max_length=500, null=True, blank=True)
+    colors = models.ManyToManyField(to=Color, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    sub_category = models.ForeignKey(SubCategory, on_delete=models.CASCADE)
     price = models.IntegerField(default=0)
     image = models.ImageField(null=True, blank=True)
 

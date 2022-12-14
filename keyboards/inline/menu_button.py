@@ -40,7 +40,7 @@ async def phone_keyboard(lang):
         texts = ["Send phone number", "Back"]
     keyboard = ReplyKeyboardMarkup()
     key1 = KeyboardButton(text=f"📞 {texts[0]}", request_contact=True)
-    key2 = KeyboardButton(text=f"⬅️  {texts[1]}")
+    key2 = KeyboardButton(text=f"⬅️ {texts[1]}")
     keyboard.add(key1)
     keyboard.add(key2)
     keyboard.resize_keyboard = True
@@ -106,27 +106,27 @@ async def order_type(lang):
     return keyboard
 
 
-async def category_keyboard(lang):
-    texts = []
-    categories = Category.objects.all()
-    texts = []
-    size = len(categories)
-    keyboard = ReplyKeyboardMarkup()
-    for i in categories:
-        if lang == "uz":
-            texts = ["Asosiy menyu", "Orqaga"]
-            keyboard.add(KeyboardButton(text=f"{i.name_uz}"))
-        elif lang == "en":
-            texts = ["Main menu", "Back"]
-            keyboard.add(KeyboardButton(text=f"{i.name_en}"))
-        elif lang == "ru":
-            texts = ["Главное меню", "Назад"]
-            keyboard.add(KeyboardButton(text=f"{i.name_ru}"))
-    back_key = KeyboardButton(f"⬅ {texts[1]}")
-    home_key = KeyboardButton(f"🏠 {texts[0]}")
-    keyboard.add(back_key, home_key)  
-    keyboard.resize_keyboard = True
-    return keyboard
+# async def category_keyboard(lang):
+#     texts = []
+#     categories = Category.objects.all()
+#     texts = []
+#     size = len(categories)
+#     keyboard = ReplyKeyboardMarkup()
+#     for i in categories:
+#         if lang == "uz":
+#             texts = ["Asosiy menyu", "Orqaga"]
+#             keyboard.add(KeyboardButton(text=f"{i.name_uz}"))
+#         elif lang == "en":
+#             texts = ["Main menu", "Back"]
+#             keyboard.add(KeyboardButton(text=f"{i.name_en}"))
+#         elif lang == "ru":
+#             texts = ["Главное меню", "Назад"]
+#             keyboard.add(KeyboardButton(text=f"{i.name_ru}"))
+#     back_key = KeyboardButton(f"⬅ {texts[1]}")
+#     home_key = KeyboardButton(f"🏠 {texts[0]}")
+#     keyboard.add(back_key, home_key)  
+#     keyboard.resize_keyboard = True
+#     return keyboard
 
 
 async def subcategory_keyboard(lang, cat_id):
@@ -153,31 +153,31 @@ async def subcategory_keyboard(lang, cat_id):
 
 
 
-async def product_keyboard(user_id, lang, sub_id):
-    texts = []
-    categories = Product.objects.filter(sub_category_id=sub_id).all()
-    texts = []
-    size = len(categories)
-    keyboard = ReplyKeyboardMarkup()
-    for i in categories:
-        if lang == "uz":
-            texts = ["Asosiy menyu", "Orqaga", "Savat"]
-            keyboard.add(KeyboardButton(text=f"{i.name_uz}"))
-        elif lang == "en":
-            texts = ["Main menu", "Back", "Корзина"]
-            keyboard.add(KeyboardButton(text=f"{i.name_en}"))
-        elif lang == "ru":
-            texts = ["Главное меню", "Назад", "Cart"]
-            keyboard.add(KeyboardButton(text=f"{i.name_ru}"))
-    cart_key = KeyboardButton(text=f"📥  {texts[2]}")
-    cart_test = await check_cart(user_id)
-    if cart_test:   
-        keyboard.add(cart_key)  
-    back_key = KeyboardButton(f"⬅ {texts[1]}")
-    home_key = KeyboardButton(f"🏠 {texts[0]}")
-    keyboard.add(back_key, home_key)  
-    keyboard.resize_keyboard = True
-    return keyboard
+# async def product_keyboard(user_id, lang, sub_id):
+#     texts = []
+#     categories = Product.objects.filter(sub_category_id=sub_id).all()
+#     texts = []
+#     size = len(categories)
+#     keyboard = ReplyKeyboardMarkup()
+#     for i in categories:
+#         if lang == "uz":
+#             texts = ["Asosiy menyu", "Orqaga", "Savat"]
+#             keyboard.add(KeyboardButton(text=f"{i.name_uz}"))
+#         elif lang == "en":
+#             texts = ["Main menu", "Back", "Корзина"]
+#             keyboard.add(KeyboardButton(text=f"{i.name_en}"))
+#         elif lang == "ru":
+#             texts = ["Главное меню", "Назад", "Cart"]
+#             keyboard.add(KeyboardButton(text=f"{i.name_ru}"))
+#     cart_key = KeyboardButton(text=f"📥  {texts[2]}")
+#     cart_test = await check_cart(user_id)
+#     if cart_test:   
+#         keyboard.add(cart_key)  
+#     back_key = KeyboardButton(f"⬅ {texts[1]}")
+#     home_key = KeyboardButton(f"🏠 {texts[0]}")
+#     keyboard.add(back_key, home_key)  
+#     keyboard.resize_keyboard = True
+#     return keyboard
 
 
 async def cart_keyboard(lang, user_id):

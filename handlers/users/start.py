@@ -282,28 +282,30 @@ async def get_user_command(message: types.Message, state: FSMContext):
             await message.answer(text="Мы предприятие в области керамики. Мы работаем с 2005 года. У нас вы можете купить специальные товары.", reply_markup=markup)
         elif lang == "en":
             await message.answer(text="We are an enterprise in the field of ceramics. We have been operating since 2005. You can buy special products from us.", reply_markup=markup)
-    elif command in ["🛍 Buyurtma berish", "🛍 Order now", "🛍 Заказать"]:
-        markup = await order_type(lang)
+    elif command in ["🛍 Mahsulotlar", "🛍 Products", "🛍 Продукты"]:
+        markup = await category_keyboard(lang)
         if lang == "uz":
-            await message.answer(text="Xizmat turini tanlang", reply_markup=markup)
+            await message.answer("Kerakli maxsulot kategoriyasini tanlang 👇", reply_markup=markup)
         elif lang == "en":
-            await message.answer(text="Select the type of service", reply_markup=markup)
+            await message.answer("Choose a product category 👇", reply_markup=markup)
         elif lang == "ru":
-            await message.answer(text="Выберите тип услуги", reply_markup=markup)
-        await state.set_state("get_service_type")
+            await message.answer("Выберите категорию товара 👇", reply_markup=markup)
+        await state.update_data(order_type=order_type)
+        await state.set_state("get_category")
     elif command in ["💎 Bonus", "💎 Бонус"]:
         markup = await user_menu(lang)
         link = await get_start_link(f'{message.from_user.id}', encode=True)
         user = await get_user(message.from_user.id)
         user.referal = link
+        print(link)
         user.save()
         text = ""
         if lang == "uz":
            text = f"Bonusga ega bo'lish uchun 2xil usul mavjud:\n\n1) Tanga to'plash, Ya'ni har 1millionlik savdo uchun 1tanga\n2)Referal orqali do'stingizni taklif qilib, uning 1-xaridi 5mlnni tashkil qilsa sizga 1 tanga beriladi\n\nSizning referal havolangiz: {link}"
         if lang == "en":
-            text = "There are 2 ways to get a bonus:\n\n1) Accumulating coins, that is, 1 coin for every 1 million sales\n2) You will get 1 coin if you invite your friend through referral and his 1st purchase is 5 million will be given\n\nYour referral link: {link}"
+            text = f"There are 2 ways to get a bonus:\n\n1) Accumulating coins, that is, 1 coin for every 1 million sales\n2) You will get 1 coin if you invite your friend through referral and his 1st purchase is 5 million will be given\n\nYour referral link: {link}"
         if lang == "ru":
-            text = "Есть 2 способа получить бонус:\n\n1) Накопление монет, то есть 1 монета за каждый 1 миллион продаж\n2) Вы получите 1 монету, если пригласите своего друга по рефералу и его 1-я покупка составит 5 миллионов будет предоставлена\n\nВаша реферальная ссылка: {link}"
+            text = f"Есть 2 способа получить бонус:\n\n1) Накопление монет, то есть 1 монета за каждый 1 миллион продаж\n2) Вы получите 1 монету, если пригласите своего друга по рефералу и его 1-я покупка составит 5 миллионов будет предоставлена\n\nВаша реферальная ссылка: {link}"
         await message.answer(text = text, reply_markup=markup)
         await state.set_state("get_command")
     elif command in ["💰 Keshbeklar haqida ma'lumot", "💰 Information about cashbacks", "💰 Информация о кэшбэках"]:
@@ -409,9 +411,9 @@ async def get_phone(message: types.Message, state: FSMContext):
     
 
 @dp.message_handler(content_types=types.ContentTypes.TEXT, state="get_phone_number_settings")
-async def get_phone(message: types.Message, state: FSMContext):
-    if "⬅️️" == message.text[0:2]:
-        print(message.text[0:2])
+async def get_phone_settings(message: types.Message, state: FSMContext):
+    if "⬅️" not in message.text:
+        print(message.text)
         lang = await get_lang(message.from_user.id)
         if isValid(message.text):
             phone = message.text
@@ -535,7 +537,50 @@ async def get_feedback_message(message: types.Message, state:FSMContext):
         elif lang == "ru":
             await message.answer("Спасибо за ваш отзыв!", reply_markup=markup)
         await state.set_state("get_command")
-        
+
+    
+@dp.callback_query_handler(state="get_category")
+async def get_category(call: types.CallbackQuery, state:FSMContext):
+    data = call.data 
+    lang = await get_lang(call.from_user.id)
+    if data == "back":
+        await call.message.delete()
+        markup = await user_menu(lang)
+        if lang == "uz":
+            await bot.send_message(chat_id=call.from_user.id, text="Kerakli bo'limni tanlang 👇", reply_markup=markup)
+        elif lang == "en":
+            await bot.send_message(chat_id=call.from_user.id, text="Select the required button 👇", reply_markup=markup)
+        elif lang == "ru":
+            await bot.send_message(chat_id=call.from_user.id, text="Выберите нужную кнопку 👇", reply_markup=markup)
+        await state.set_state("get_command")
+    else:
+        markup = await product_keyboard(cat_id=data, lang=lang)
+        text = ""
+        if lang == "uz":
+            text = "Kerakli maxsulotni tanlang 👇"
+        if lang == "en":
+            text = "Choose the desired product 👇"
+        if lang == "ru":
+            text = "Выберите нужный товар 👇"
+        await call.message.edit_text(text=text, reply_markup=markup)
+        await state.set_state("get_product")
+
+
+@dp.callback_query_handler(state="get_product")
+async def get_category(call: types.CallbackQuery, state:FSMContext):
+    data = call.data 
+    lang = await get_lang(call.from_user.id)
+    if data == "back":
+        markup = await category_keyboard(lang)
+        if lang == "uz":
+            await call.message.edit_text(text="Kerakli maxsulot kategoriyasini tanlang 👇", reply_markup=markup)
+        elif lang == "en":
+            await call.message.edit_text(text="Choose a product category 👇", reply_markup=markup)
+        elif lang == "ru":
+            await call.message.edit_text(text="Выберите категорию товара 👇", reply_markup=markup)
+        await state.update_data(order_type=order_type)
+        await state.set_state("get_category")
+     
 
 @dp.message_handler(state="get_command_about")
 async def get_command_about(message: types.Message, state: FSMContext):
