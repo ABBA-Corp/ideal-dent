@@ -330,26 +330,21 @@ async def confirmation_keyboard(lang):
     return keyboard
 
 
-async def filial_keyboard(lang):
+async def buy_keyboard(lang):
     texts = []
-    filials = Filial.objects.all()
+    if lang == "uz":
+        texts = ["Sotib olish", "Orqaga"]
+    elif lang == "en":
+        texts = ["Buy", "Back"]
+    elif lang == "ru":
+        texts = ["Купить", "Назад"]
+
     keyboard = ReplyKeyboardMarkup()
-    for i in filials:
-        if lang == "uz":
-            texts = ["Asosiy menyu", "Orqaga"]
-            keyboard.add(KeyboardButton(text=f"{i.filial_uz}"))
-        elif lang == "en":
-            texts = ["Main menu", "Back"]
-            keyboard.add(KeyboardButton(text=f"{i.filial_en}"))
-        elif lang == "ru":
-            texts = ["Главное меню", "Назад"]
-            keyboard.add(KeyboardButton(text=f"{i.filial_ru}"))
-    back_key = KeyboardButton(f"⬅ {texts[1]}")
-    home_key = KeyboardButton(f"🏠 {texts[0]}")
-    keyboard.add(back_key, home_key)  
+    key1 = KeyboardButton(text=f"🛒 {texts[0]}")
+    key2 = KeyboardButton(text=f"⬅️ {texts[1]}")
+    keyboard.add(key1, key2)
     keyboard.resize_keyboard = True
     return keyboard
-
 
 
 # async def confirm_keyboard():

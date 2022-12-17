@@ -38,10 +38,10 @@ def get_lang(user_id):
         return None
 
 @sync_to_async
-def get_subcategory(sub_id):
+def get_color(color_id):
     try:
-        subcategory = SubCategory.objects.filter(id=sub_id).first()
-        return subcategory
+        color = Color.objects.filter(id=color_id).first()
+        return color
     except Exception as exx:
         print(exx)
         return None
@@ -52,6 +52,21 @@ def get_product(product_id):
     try:
         product = Product.objects.filter(id=product_id).first()
         return product
+    except Exception as exx:
+        print(exx)
+        return None
+
+
+@sync_to_async
+def get_weihgts(product_id):
+    try:
+        product = Product.objects.filter(id=product_id).first()
+        weihgts = product.weihgts.all()
+        print(weihgts)
+        text = ""
+        for weihgt in weihgts:
+            text += str(weihgt.massa) + " "
+        return text
     except Exception as exx:
         print(exx)
         return None
@@ -81,7 +96,7 @@ def get_cart(cart_id):
         return None
 
 
-@sync_to_async 
+@sync_to_async
 def get_category_by_name(name):
     try:
         categories = Category.objects.all()
@@ -252,10 +267,16 @@ def add_address(longitude, latitude, name, user_id):
 
 
 @sync_to_async
-def add_order(user_id, date, address):
+def add_order(user_id, date, product, gramm, color, address=None):
     try:
         user = User.objects.filter(user_id=user_id).first()
+        product = Product.objects.get(id=product)
+        color = Color.objects.get(id=color)
+        gramm = Massa.objects.get(id=gramm)
         order, created = Order.objects.get_or_create(user=user, date=date, address=address)
+        order.product = product
+        order.color = color.color
+        order.gramm = gramm.massa
         order.save()
         return order
     except Exception as exx:

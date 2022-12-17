@@ -136,7 +136,6 @@ async def get_name(message: types.Message, state: FSMContext):
 async def get_phone(message: types.Message, state: FSMContext):
     if message.contact:
         phone = message.contact.phone_number[1:]
-        print(phone)
         user = await get_user(message.from_user.id)
         user.new_phone = phone
         otp = generateOTP()
@@ -218,7 +217,6 @@ async def get_phone(message: types.Message, state: FSMContext):
 async def get_phone(message: types.Message, state: FSMContext):
     user = await get_user(message.from_user.id)
     lang = user.lang
-    print(message.text)
     if "⬅️️" in message.text: 
         markup = await phone_keyboard(lang)
         if lang == "uz":
@@ -297,7 +295,6 @@ async def get_user_command(message: types.Message, state: FSMContext):
         link = await get_start_link(f'{message.from_user.id}', encode=True)
         user = await get_user(message.from_user.id)
         user.referal = link
-        print(link)
         user.save()
         text = ""
         if lang == "uz":
@@ -413,7 +410,6 @@ async def get_phone(message: types.Message, state: FSMContext):
 @dp.message_handler(content_types=types.ContentTypes.TEXT, state="get_phone_number_settings")
 async def get_phone_settings(message: types.Message, state: FSMContext):
     if "⬅️" not in message.text:
-        print(message.text)
         lang = await get_lang(message.from_user.id)
         if isValid(message.text):
             phone = message.text
@@ -580,8 +576,149 @@ async def get_category(call: types.CallbackQuery, state:FSMContext):
             await call.message.edit_text(text="Выберите категорию товара 👇", reply_markup=markup)
         await state.update_data(order_type=order_type)
         await state.set_state("get_category")
-     
+    else:
+        product = await get_product(data)
+        await call.message.delete()
+        await state.update_data(product_id=data)
+        markup = await color_keyboard(lang=lang, product_id=data)
+        if product.image:
+            photo = open(f'.{product.ImageURL}', 'rb')
+            if lang == "uz":
+                await bot.send_photo(chat_id=call.from_user.id, photo=photo, caption="Kerakli rangni tanlang 👇", reply_markup=markup)
+            elif lang == "en":
+                await bot.send_photo(chat_id=call.from_user.id, photo=photo, caption="Choose the desired color 👇", reply_markup=markup)
+            elif lang == "ru":
+                await bot.send_photo(chat_id=call.from_user.id, photo=photo, caption="Выберите нужный цвет 👇", reply_markup=markup)
+        else:
+            pass
+        await state.set_state("get_color")
 
+
+@dp.callback_query_handler(state="get_color")
+async def get_category(call: types.CallbackQuery, state:FSMContext):
+    data = call.data 
+    lang = await get_lang(call.from_user.id)
+    state_data = await state.get_data()
+    product_id = state_data['product_id']
+    product = await get_product(product_id)
+    if data == "back":
+        await call.message.delete()
+        markup = await product_keyboard(cat_id=product.category.id, lang=lang)
+        text = ""
+        if lang == "uz":
+            text = "Kerakli maxsulotni tanlang 👇"
+        if lang == "en":
+            text = "Choose the desired product 👇"
+        if lang == "ru":
+            text = "Выберите нужный товар 👇"
+        await bot.send_message(chat_id=call.from_user.id, text=text, reply_markup=markup)
+        await state.set_state("get_product")
+    else:
+        color = await get_color(data)
+        product = await get_product(product_id)
+        weihgts = await get_weihgts(product_id)
+        await state.update_data(color_id=data)
+        markup = await massa_keyboard(lang=lang, product_id=product_id)
+        text = ""
+        if lang == "uz":
+            text = f"{product.name_uz} model {color.color}. Mavjud grammlar: \n{weihgts}. Kerakli miqdorni tanlang 👇"
+        if lang == "en":
+            text = f"{product.name_en} model {color.color}. Available grams: \n{weihgts}. Select the required amount 👇"
+        if lang == "ru":
+            text = f"{product.name_en} модель {color.color}. Доступные граммы: \n{weihgts}. Выберите необходимое количество 👇"
+        await call.message.delete()
+        if color.image:
+            photo = open(f'.{color.ImageURL}', 'rb')
+            await bot.send_photo(chat_id=call.from_user.id, photo=photo, caption=text, reply_markup=markup)
+        else:
+            await bot.send_message(chat_id=call.from_user.id, text=text, rely_markup=markup) 
+        await state.set_state("get_massa")  
+
+@dp.callback_query_handler(state="get_massa")
+async def get_category(call: types.CallbackQuery, state:FSMContext):
+    print("AAAAAAAAAAA")
+    data = call.data 
+    lang = await get_lang(call.from_user.id)
+    state_data = await state.get_data()
+    product_id = state_data['product_id']
+    color_id = state_data['color_id']
+    product = await get_product(product_id)
+    if data == "back":
+        product = await get_product(product_id)
+        await call.message.delete()
+        markup = await color_keyboard(lang=lang, product_id=product_id)
+        if product.image:
+            photo = open(f'.{product.ImageURL}', 'rb')
+            if lang == "uz":
+                await bot.send_photo(chat_id=call.from_user.id, photo=photo, caption="Kerakli rangni tanlang 👇", reply_markup=markup)
+            elif lang == "en":
+                await bot.send_photo(chat_id=call.from_user.id, photo=photo, caption="Choose the desired color 👇", reply_markup=markup)
+            elif lang == "ru":
+                await bot.send_photo(chat_id=call.from_user.id, photo=photo, caption="Выберите нужный цвет 👇", reply_markup=markup)
+        else:
+            if lang == "uz":
+                await bot.send_message(chat_id=call.from_user.id, text="Kerakli rangni tanlang 👇", reply_markup=markup)
+            elif lang == "en":
+                await bot.send_message(chat_id=call.from_user.id, text="Choose the desired color 👇", reply_markup=markup)
+            elif lang == "ru":
+                await bot.send_message(chat_id=call.from_user.id, text="Выберите нужный цвет 👇", reply_markup=markup)
+        await state.set_state("get_color")
+    else:
+        await state.update_data(massa_id=data)
+        product = await get_product(product_id)
+        color = product.colors.filter(id=color_id).first()
+        massa = product.weihgts.filter(id=data).first()
+        markup = await buy_keyboard(lang)
+        text = ""
+        if lang == "uz":
+            text = f"{product.name_uz} model {color.color}.\nMiqdor: {massa.massa}"
+        if lang == "ru":
+            text = f"{product.name_ru} model {color.color}.\nMiqdor: {massa.massa}"
+        if lang == "en":
+            text = f"{product.name_en} model {color.color}.\nMiqdor: {massa.massa}"
+        await call.message.delete()
+        await bot.send_message(chat_id=call.from_user.id, text=text, reply_markup=markup)
+
+        await state.set_state("buy_or_back")
+        
+
+@dp.message_handler(state="buy_or_back")
+async def buy_or_back(message: types.Message, state: FSMContext):
+    lang = await get_lang(message.from_user.id)
+    state_data = await state.get_data()
+    product_id = state_data['product_id']
+    color_id = state_data['color_id']
+    color = await get_color(color_id)
+    product = await get_product(product_id)
+    if message.text in ["🛒 Sotib olish", "🛒 Buy", "🛒 Купить"]:
+        markup = await order_type(lang)
+        if lang == "uz":
+            await bot.send_message(chat_id=message.from_user.id, text="Xizmat turini tanlang", reply_markup=markup)
+        elif lang == "en":
+            await bot.send_message(chat_id=message.from_user.id, text="Select the type of service", reply_markup=markup)
+        elif lang == "ru":
+            await bot.send_message(chat_id=message.from_user.id, text="Выберите тип услуги", reply_markup=markup)
+        await state.set_state("get_service_type")
+    elif message.text in ["⬅️ Orqaga", "⬅️ Back", "⬅️ Назад"]:
+        weihgts = await get_weihgts(product_id)
+        markup = await massa_keyboard(lang=lang, product_id=product_id)
+        text = ""
+        if lang == "uz":
+            text = f"{product.name_uz} model {color.color}. Mavjud grammlar: \n{weihgts}. Kerakli miqdorni tanlang 👇"
+        if lang == "en":
+            text = f"{product.name_en} model {color.color}. Available grams: \n{weihgts}. Select the required amount 👇"
+        if lang == "ru":
+            text = f"{product.name_en} модель {color.color}. Доступные граммы: \n{weihgts}. Выберите необходимое количество 👇"
+        if color.image:
+            photo = open(f'.{color.ImageURL}', 'rb')
+            await bot.send_photo(chat_id=message.from_user.id, photo=photo, caption=text, reply_markup=markup)
+        else:
+            await bot.send_message(chat_id=message.from_user.id, text=text, rely_markup=markup)
+        
+        await state.set_state("get_massa")  
+        
+
+    
 @dp.message_handler(state="get_command_about")
 async def get_command_about(message: types.Message, state: FSMContext):
     if message.text in ["⬅️ Orqaga", "⬅️ Back", "⬅️ Назад"]:
@@ -599,406 +736,97 @@ async def get_command_about(message: types.Message, state: FSMContext):
 @dp.message_handler(state="get_service_type")
 async def get_command_about(message: types.Message, state: FSMContext):
     user = await get_user(message.from_id)
+    state_data = await state.get_data()
+    product_id = state_data['product_id']
+    color_id = state_data['color_id']
+    color = await get_color(color_id)
+    product = await get_product(product_id)
     lang = await get_lang(message.from_user.id)
     if message.text in ["⬅ Назад", "⬅ Orqaga", "⬅ Back"]:
-        markup = await user_menu(lang)
+        weihgts = await get_weihgts(product_id)
+        markup = await massa_keyboard(lang=lang, product_id=product_id)
+        text = ""
         if lang == "uz":
-            await message.answer("Kerakli bo'limni tanlang 👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("Choose the required button👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("Выберите нужную кнопку👇", reply_markup=markup)
-        await state.set_state("get_command")
+            text = f"{product.name_uz} model {color.color}. Mavjud grammlar: \n{weihgts}. Kerakli miqdorni tanlang 👇"
+        if lang == "en":
+            text = f"{product.name_en} model {color.color}. Available grams: \n{weihgts}. Select the required amount 👇"
+        if lang == "ru":
+            text = f"{product.name_en} модель {color.color}. Доступные граммы: \n{weihgts}. Выберите необходимое количество 👇"
+        if color.image:
+            photo = open(f'.{color.ImageURL}', 'rb')
+            await bot.send_photo(chat_id=message.from_user.id, photo=photo, caption=text, reply_markup=markup)
+        else:
+            await bot.send_message(chat_id=message.from_user.id, text=text, rely_markup=markup)
+        await state.set_state("get_massa")
     elif message.text in ["🏃‍♂️ Olib ketish", "🏃‍♂️ Самовывоз", "🏃‍♂️ Pick up"]:
+        data = await state.get_data()
         order_type = "pick"
+        user = await get_user(message.from_user.id)
         user.order_type = order_type
         user.save()
-        markup = await category_keyboard(lang)
+        color = data['color_id']
+        product = data['product_id']
+        gramm = data['massa_id']
+        date = datetime.datetime.now()
+        order = await add_order(user_id=message.from_id, date=date, address="", color=color, gramm=gramm, product=product)
+        await state.update_data(order_id=order.id, order_type=order_type)
+        summa = order.product.price
         if lang == "uz":
-            await message.answer("Kerakli maxsulot kategoriyasini tanlang 👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("Choose a product category 👇", reply_markup=markup)
+            text = f"<b>🛒Sizning Buyurtmangiz</b>\n\n🆔 Buyurtma: <b>#{order.id}</b>\n"\
+            f"👤 Xaridor: <b>#{order.user.user_id}</b>\nTelefon <b>+{order.user.phone}</b>\nBuyurtma: {order.product.name_uz} {order.color} {order.gramm}\nBuyurtma turi: Tekkazib berish\n📍 Manzil: {order.address}\n"
+            text += f"\n<b>Narxi: </b>{summa}v\n"
+            text += f"\nBuyurtmani tasdiqlang 👇"
         elif lang == "ru":
-            await message.answer("Выберите категорию товара 👇", reply_markup=markup)
-        await state.update_data(order_type=order_type)
-        await state.set_state("get_category")
+            text = f"<b>🛒Ваш заказ</b>\n\n🆔 Заказ: <b>#{order.id}</b>\n"\
+            f"👤 Заказчик: <b>#{order.user.user_id}</b>\nТелефон <b>+{order.user.phone}</b>\nЗаказ: {order.product.name_uz} {order.color} {order.gramm}\nТип заказа: Доставка\n📍 Адрес: {order.address}\n"
+            text += f"\n<b>Цена: </b>{summa}"
+            text += f"\nПодтвердите заказ 👇"
+        elif lang == "en":
+            text = f"<b>🛒Your Order</b>\n\n🆔 Order: <b>#{order.id}</b>\n"\
+            f"👤 Customer: <b>#{order.user.user_id}</b>\nPhone <b>+{order.user.phone}</b>\nOrder: {order.product.name_uz} {order.color} {order.gramm}\nOrder Type: Delivery\n📍 Address: {order.address}\n"
+            text += f"\n<b>Price: </b>{summa}"
+            text += f"\nConfirm the order 👇"
+        order.summa = summa
+        order.save()
+        markup = await confirmation_keyboard(lang)
+        await message.answer(text=text, reply_markup=markup)
+        await state.set_state("confirm_order")
     elif message.text in ["🚚 Yetkazib berish", "🚚 Deliver", "🚚  Доставка"]:
         order_type = "deliver"
         user.order_type = order_type
         user.save()
-        search = await go_search(lang)
-        markup = await category_keyboard(lang)
-        if lang == "uz":
-            await message.answer(" 🔍 👇", reply_markup=search)
-            await message.answer("Kerakli maxsulot kategoriyasini tanlang 👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer(" 🔍 👇", reply_markup=search)
-            await message.answer("Choose a product category 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer(" 🔍 👇", reply_markup=search)
-            await message.answer("Выберите категорию товара 👇", reply_markup=markup)
+        lang = await get_lang(message.from_user.id)
+        text = []
+        if lang == 'uz':
+            text = ['Yetkazish manzilini jo\'nating']
+        elif lang == 'ru':
+            text = ['Отправьте адрес доставки']
+        elif lang == 'en':
+            text = ['Please send your delivery address']
+        markup = await location_send(lang)
         await state.update_data(order_type=order_type)
-        await state.set_state("get_category")
+        await message.answer(f"{text[0]} 👇", reply_markup=markup)
+        await state.set_state("get_address")
     else:
         pass        
-
-@dp.message_handler(state="get_category")
-async def get_command_about(message: types.Message, state: FSMContext):
-    lang = await get_lang(message.from_user.id)
-    if message.text in ["⬅ Orqaga", "⬅ Back", "⬅ Назад"]:
-        markup = await order_type(lang)
-        if lang == "uz":
-            await message.answer(text="Xizmat turini tanlang", reply_markup=markup)
-        elif lang == "en":
-            await message.answer(text="Select the type of service", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer(text="Выберите тип услуги", reply_markup=markup)
-        await state.set_state("get_service_type")
-    elif message.text in ["🏠 Asosiy menyu", "🏠 Main menu", "🏠 Главное меню"]:
-        lang = await get_lang(message.from_user.id)
-        markup = await user_menu(lang)
-        if lang == "uz":
-            await message.answer("Botimizga xush kelibsiz. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("Добро пожаловать в наш бот. Выберите нужный раздел👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("Welcome to our bot. Please select the desired section 👇", reply_markup=markup)
-        await state.set_state("get_command")
-    else:
-        category = await get_category_by_name(message.text)
-        if category is not None:
-            if category.image:
-                photo = open(f".{category.ImageURL}", 'rb')  
-                await message.answer_photo(photo=photo)
-            await state.update_data(category_id=category.id)
-            markup = await subcategory_keyboard(lang=lang, cat_id=category.id)
-            if lang == "uz":
-                await message.answer(text="Mahsulot toifasini tanlang 👇", reply_markup=markup)
-            elif lang == "en":
-                await message.answer(text="Choose a product subcategory 👇", reply_markup=markup)
-            elif lang == "ru":
-                await message.answer(text="Выберите подкатегорию товара 👇", reply_markup=markup)
-            await state.set_state("get_subcategory")
-
-
-@dp.message_handler(state="get_subcategory")
-async def get_command_about(message: types.Message, state: FSMContext):
-    lang = await get_lang(message.from_user.id)
-    command = message.text
-    if message.text in ["⬅ Orqaga", "⬅ Back", "⬅ Назад"]:
-        markup = await category_keyboard(lang)
-        if lang == "uz":
-            await message.answer("Kerakli maxsulot kategoriyasini tanlang 👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("Choose a product category 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("Выберите категорию товара 👇", reply_markup=markup)
-        await state.set_state("get_category")
-    elif message.text in ["🏠 Asosiy menyu", "🏠 Main menu", "🏠 Главное меню"]:
-        lang = await get_lang(message.from_user.id)
-        markup = await user_menu(lang)
-        if lang == "uz":
-            await message.answer("Botimizga xush kelibsiz. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("Добро пожаловать в наш бот. Выберите нужный раздел👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("Welcome to our bot. Please select the desired section 👇", reply_markup=markup)
-        await state.set_state("get_command")
-    else:
-        sub_category = await get_subcategory_by_name(message.text)
-        await state.update_data(subcategory_id=sub_category.id)
-        markup = await product_keyboard(lang=lang, sub_id=sub_category.id, user_id=message.from_id)
-        if lang == "uz":
-            await message.answer("Kerakli mahsulotni tanlang 👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("Choose a product 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("Выберите товар 👇", reply_markup=markup)
-        await state.set_state("get_product")
-        
-
-
-@dp.inline_handler(state='*')
-async def inline_echo(inline_query: InlineQuery, state:FSMContext):
-    data = await state.get_data()
-    lang = await get_lang(inline_query.from_user.id)
-    text = inline_query.query or ''
-    texts = await get_products(product_name=text)
-    items = []
-    for i in texts:
-        if lang == "uz":
-            input_content = InputTextMessageContent(f"{i.name_uz}")
-            item = InlineQueryResultArticle(
-            id=i.id,
-            title=f'{i.name_uz !r}',
-            input_message_content=input_content,
-            )
-        if lang == "en":
-            input_content = InputTextMessageContent(f"{i.name_en}")
-            item = InlineQueryResultArticle(
-            id=i.id,
-            title=f'{i.name_en !r}',
-            input_message_content=input_content,
-            )
-        if lang == "ru":
-            input_content = InputTextMessageContent(f"{i.name_ru}")
-            item = InlineQueryResultArticle(
-            id=i.id,
-            title=f'{i.name_ru !r}',
-            input_message_content=input_content,
-            )
-        items.append(item)
-    await bot.answer_inline_query(inline_query.id, results=items, cache_time=1)
-    await state.set_state("get_product")
-
-
-@dp.message_handler(state="get_product")
-async def get_command_about(message: types.Message, state: FSMContext):
-    lang = await get_lang(message.from_user.id)
-    command = message.text
-    data = await state.get_data()
-    if message.text in ["⬅ Orqaga", "⬅ Back", "⬅ Назад"]:
-        cat_id = data['category_id']
-        markup = await subcategory_keyboard(lang=lang, cat_id=cat_id)
-        if lang == "uz":
-            await message.answer(text="Mahsulot toifasini tanlang 👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer(text="Choose a product subcategory 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer(text="Выберите подкатегорию товара 👇", reply_markup=markup)
-        await state.set_state("get_subcategory")
-    elif message.text in ["🏠 Asosiy menyu", "🏠 Main menu", "🏠 Главное меню"]:
-        lang = await get_lang(message.from_user.id)
-        markup = await user_menu(lang)
-        if lang == "uz":
-            await message.answer("Botimizga xush kelibsiz. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("Добро пожаловать в наш бот. Выберите нужный раздел👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("Welcome to our bot. Please select the desired section 👇", reply_markup=markup)
-        await state.set_state("get_command")
-    elif command in ["📥  Savat", "📥  Cart", "📥  Корзина"]:
-        text = await get_carts(message.from_id)
-        if text is not None:
-            cart_test = await check_cart(message.from_id)
-            markup = await cart_keyboard(lang=lang, user_id=message.from_id)
-            await message.answer(text=text, reply_markup=markup, parse_mode='HTML')
-        await state.set_state("get_cart_command")
-    else:
-        product = await get_product_by_name(message.text)
-        if product != []:
-            user = await get_user(message.from_user.id)
-            cart = await add_cart(user=user, product=product)
-            await state.update_data(cart_id=cart.id)
-            markup = await product_back_keyboard(lang)
-            if lang == "uz":
-                await message.answer(text=f"<b>{product.name_uz}</b>\n\nMiqdorni kiriting🔢", reply_markup=markup)
-            elif lang == "en":
-                await message.answer(text=f"<b>{product.name_en}</b>\n\nEnter Quantitys🔢", reply_markup=markup)
-            elif lang == "ru":
-                await message.answer(text=f"<b>{product.name_ru}</b>\n\nВведите количество🔢", reply_markup=markup)
-            await state.set_state("get_count")
     
-    
-# @dp.callback_query_handler(state="cart_state")
-# async def cart_state(call: types.CallbackQuery, state: FSMContext):
-#     lang = await get_lang(call.from_user.id)
-#     command = call.data.split('-')[0]
-#     cart_id = call.data.split('-')[1]
-#     if command == "cancel":
-#         cart = await get_cart(cart_id)
-#         markup = await product_keyboard(lang, sub_id=cart.product.sub_category.id)
-#         if lang == "uz":
-#             await call.message.edit_text("Kerakli mahsulotni tanlang 👇", reply_markup=markup)
-#         elif lang == "en":
-#             await call.message.edit_text("Choose a product 👇", reply_markup=markup)
-#         elif lang == "ru":
-#             await call.message.edit_text("Выберите товар 👇", reply_markup=markup)
-#         await state.set_state("get_product")
-#     elif command == "cart_plus":
-#         cart = await get_cart(cart_id)
-#         cart.count += 1
-#         cart.save()
-#         markup = await order_keyboard(lang=lang, cart_id=cart.id)
-#         if lang == "uz":
-#             await call.message.edit_text(text=f"{cart.product.name_uz}", reply_markup=markup)
-#         elif lang == "en":
-#             await call.message.edit_text(text=f"{cart.product.name_en}", reply_markup=markup)
-#         elif lang == "ru":
-#             await call.message.edit_text(text=f"{cart.product.name_ru}", reply_markup=markup)
-#     elif command == "cart_minus":
-#         cart = await get_cart(cart_id)
-#         if cart.count <= 1:
-#             cart.count = 1
-#         else:
-#             cart.count -= 1
-#         cart.save()
-#         markup = await order_keyboard(lang=lang, cart_id=cart.id)
-#         if lang == "uz":
-#             await call.message.edit_text(text=f"{cart.product.name_uz}", reply_markup=markup)
-#         elif lang == "en":
-#             await call.message.edit_text(text=f"{cart.product.name_en}", reply_markup=markup)
-#         elif lang == "ru":
-#             await call.message.edit_text(text=f"{cart.product.name_ru}", reply_markup=markup)
-#     elif command == "confirm":
-#         cart = await get_cart(cart_id)
-#         cart.confirm = True
-#         cart.save()
-#         markup = await category_keyboard(lang)
-#         if lang == "uz":
-#             await call.message.edit_text("Kerakli maxsulot kategoriyasini tanlang 👇", reply_markup=markup)
-#         elif lang == "en":
-#             await call.message.edit_text("Choose a product category 👇", reply_markup=markup)
-#         elif lang == "ru":
-#             await call.message.edit_text("Выберите категорию товара 👇", reply_markup=markup)
-#         await state.set_state("get_category")
-        
-        
-@dp.message_handler(state="get_count")
-async def get_count(message: types.Message, state: FSMContext):
-    count = message.text
-    data = await state.get_data()
-    lang = await get_lang(message.from_user.id)
-    if count.isnumeric():
-        cart_id = data["cart_id"]
-        cart = await get_cart(cart_id)
-        cart.count = int(count)
-        cart.save()
-        sub_id = data['subcategory_id']
-        lang = await get_lang(message.from_user.id)
-        sub_category = await get_subcategory(sub_id)
-        await state.update_data(subcategory_id=sub_category.id)
-        markup = await product_keyboard(user_id=message.from_id, lang=lang, sub_id=sub_category.id)
-        if lang == "uz":
-            await message.answer("✅ Mahsulot savatchaga qo'shildi\nKerakli mahsulotni tanlang 👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("✅ Product added to cart\nChoose a product 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("✅ Товар добавлен в корзину\nВыберите товар 👇", reply_markup=markup)
-        await state.set_state("get_product")
-    else:
-        if message.text in ["⬅ Orqaga", "⬅ Back", "⬅ Назад"]:
-            sub_id = data['subcategory_id']
-            sub_category = await get_subcategory(sub_id)
-            await state.update_data(subcategory_id=sub_category.id)
-            markup = await product_keyboard(lang=lang, sub_id=sub_category.id, user_id=message.from_id)
-            if lang == "uz":
-                await message.answer("Kerakli mahsulotni tanlang 👇", reply_markup=markup)
-            elif lang == "en":
-                await message.answer("Choose a product 👇", reply_markup=markup)
-            elif lang == "ru":
-                await message.answer("Выберите товар 👇", reply_markup=markup)
-            await state.set_state("get_product")
-        elif message.text in ["🏠 Asosiy menyu", "🏠 Main menu", "🏠 Главное меню"]:
-            lang = await get_lang(message.from_user.id)
-            markup = await user_menu(lang)
-            if lang == "uz":
-                await message.answer("Botimizga xush kelibsiz. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
-            elif lang == "ru":
-                await message.answer("Добро пожаловать в наш бот. Выберите нужный раздел👇", reply_markup=markup)
-            elif lang == "en":
-                await message.answer("Welcome to our bot. Please select the desired section 👇", reply_markup=markup)
-            await state.set_state("get_command")
-        else:
-            if lang == "uz":
-                await message.answer("⚠️ Miqdorni raqamlar bilan kiriting")
-            elif lang == "en":
-                await message.answer("⚠️ Enter quantity in numbers")
-            elif lang == "ru":
-                await message.answer("⚠️ Введите количество цифрами")
-
-
-@dp.callback_query_handler(state="get_cart_command")
-async def get_cart_query(call:types.CallbackQuery, state:FSMContext):
-    lang = await get_lang(call.from_user.id)
-    await call.message.delete()
-    markup = await order_type(lang)
-    if lang == "uz":
-        await bot.send_message(chat_id=call.from_user.id, text="Xizmat turini tanlang", reply_markup=markup)
-    elif lang == "en":
-        await bot.send_message(chat_id=call.from_user.id, text="Select the type of service", reply_markup=markup)
-    elif lang == "ru":
-        await bot.send_message(chat_id=call.from_user.id, text="Выберите тип услуги", reply_markup=markup)
-    await state.set_state("get_service_type")
-    
-
-@dp.message_handler(state="get_cart_command")
-async def get_count(message: types.Message, state: FSMContext):
-    lang = await get_lang(message.from_user.id)
-    if message.text in ["⬅ Orqaga", "⬅ Back", "⬅ Назад"]:
-        markup = await user_menu(lang)
-        if lang == "uz":
-            await message.answer("Botimizga xush kelibsiz. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("Добро пожаловать в наш бот. Выберите нужный раздел👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("Welcome to our bot. Please select the desired section 👇", reply_markup=markup)
-        await state.set_state("get_command")
-    elif message.text in ["🗑 Savatchani tozalash", "🗑 Clear cart", "🗑 Очистить корзину"]:
-        await clear_cart(message.from_id)
-        markup = await user_menu(lang)
-        if lang == "uz":
-            await message.answer("🗑 Savatcha tozalandi. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("🗑 Корзина очищена. Выберите нужный раздел👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("🗑 Cart cleared. Please select the desired section 👇", reply_markup=markup)
-        await state.set_state("get_command")
-    elif message.text in ["⬅️ Orqaga", "⬅️ Back", "⬅️ Назад"]:
-        lang = await get_lang(message.from_user.id)
-        markup = await user_menu(lang)
-        if lang == "uz":
-            await message.answer("Kerakli bo'limni tanlang 👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("Choose the required button👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("Выберите нужную кнопку👇", reply_markup=markup)
-        await state.set_state("get_command")
-    elif message.text in ["🛒 Buyurtmani rasmiylashtirish", "🛒 Complete order", "🛒 Завершить заказ"]:
-        markup = await pay_method(lang)
-        if lang == "uz":
-            await message.answer("Iltimos to'lov usulini tanlang 👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("Please select a payment method 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("Пожалуйста, выберите способ оплаты 👇", reply_markup=markup)
-        await state.set_state("get_payment_method")
-    else:
-        product_name = message.text.split("❌ ")
-        try:
-            product = await get_product_by_name(product_name[1])
-        except:
-            pass
-        if product is not None:
-            await delete_cart_item(product=product, user_id=message.from_user.id)
-            text = await get_carts(message.from_id)
-            markup = await user_menu(lang)
-            if text is not None:
-                markup = await cart_keyboard(lang=lang, user_id=message.from_id)
-                await message.answer(text=text, reply_markup=markup, parse_mode='HTML')
-                await state.set_state("get_cart_command")
-            else:
-                if lang == "uz":
-                    await message.answer("❌ Savatchangiz bo'sh. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
-                elif lang == "ru":
-                    await message.answer("❌ Ваша корзина пуста. Выберите нужный раздел👇", reply_markup=markup)
-                elif lang == "en":
-                    await message.answer("❌ Your shopping cart is empty. Please select the desired section 👇", reply_markup=markup)
-                await state.set_state("get_command")
-
 
 @dp.message_handler(state="get_payment_method")
 async def get_count(message: types.Message, state: FSMContext):
     lang = await get_lang(message.from_user.id)
     data = await state.get_data()
+    order_id = data["order_id"]
+    print(order_id)
     user = await get_user(message.from_id)
-    order_type = user.order_type
     if message.text in ["⬅ Orqaga", "⬅ Back", "⬅ Назад"]:
-        text = await get_carts(message.from_id)
-        if text is not None:
-            markup = await cart_keyboard(lang=lang, user_id=message.from_id)
-            await message.answer(text=text, reply_markup=markup, parse_mode='HTML')
-            await state.set_state("get_cart_command")            
+        markup = await order_type(lang)
+        if lang == "uz":
+            await bot.send_message(chat_id=message.from_user.id, text="Xizmat turini tanlang", reply_markup=markup)
+        elif lang == "en":
+            await bot.send_message(chat_id=message.from_user.id, text="Select the type of service", reply_markup=markup)
+        elif lang == "ru":
+            await bot.send_message(chat_id=message.from_user.id, text="Выберите тип услуги", reply_markup=markup)
+        await state.set_state("get_service_type")
     elif message.text in ["🔵 Click", "🟢 Payme"]:
         card_type = ''
         if message.text == "🔵 Click":
@@ -1006,180 +834,39 @@ async def get_count(message: types.Message, state: FSMContext):
         elif message.text == "🟢 Payme":
             card_type = "payme"
         await state.update_data(card_type=card_type)
-        if order_type == "deliver":
-            lang = await get_lang(message.from_user.id)
-            text = []
-            if lang == 'uz':
-                text = ['Yetkazish manzilini jo\'nating']
-            elif lang == 'ru':
-                text = ['Отправьте адрес доставки']
-            elif lang == 'en':
-                text = ['Please send your delivery address']
-            markup = await location_send(lang)
-            await message.answer(text=f"{text[0]} 👇", reply_markup=markup)
-            await state.set_state("get_address")
-        else:
-            lang = await get_lang(message.from_user.id)
-            text = []
-            if lang == 'uz':
-                text = ['🏬 Olib ketish uchun filialni tanlang']
-            elif lang == 'ru':
-                text = ['🏬 Выберите отделение для самовывоза']
-            elif lang == 'en':
-                text = ['🏬 Choose a branch for pickup']
-            markup = await filial_keyboard(lang)
-            await message.answer(f"{text[0]} 👇", reply_markup=markup)
-            await state.set_state("get_filial")
+        prices = []
+        if message.text == "🔵 Click":
+            photo = 'https://click.uz/click/images/clickog.png'
+            token = '398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065'
+        elif message.text == "🟢 Payme":
+            photo = "https://cdn.paycom.uz/documentation_assets/payme_01.png"
+            token = '371317599:TEST:1664877798422'
+        prices.append(
+            types.LabeledPrice(label=f"Test uchun tanish", amount=int(1000) * 100))
+        await bot.send_invoice(chat_id=message.from_user.id, title=f'Test title',
+                               description=f' Test description',
+                               provider_token=token,
+                               currency='UZS',
+                               photo_url=photo,
+                               photo_height=512,  # !=0/None or picture won't be shown
+                               photo_width=512,
+                               photo_size=512,
+                               prices=prices,
+                               start_parameter='hz-wto-tut',
+                               payload="Payload"
+                               )
+        await state.set_state("payment")        
        
     elif message.text in ["💴 Naqd pul orqali", "💴 Наличными", "💴 Cash"]:
-        cash_type = "cash"
-        if order_type == "deliver":
-            lang = await get_lang(message.from_user.id)
-            text = []
-            if lang == 'uz':
-                text = ['Yetkazish manzilini jo\'nating']
-            elif lang == 'ru':
-                text = ['Отправьте адрес доставки']
-            elif lang == 'en':
-                text = ['Please send your delivery address']
-            markup = await location_send(lang)
-            await state.update_data(card_type=cash_type)
-            await message.answer(f"{text[0]} 👇", reply_markup=markup)
-            await state.set_state("get_address")
-        else:
-            lang = await get_lang(message.from_user.id)
-            text = []
-            if lang == 'uz':
-                text = ['🏬 Olib ketish uchun filialni tanlang']
-            elif lang == 'ru':
-                text = ['🏬 Выберите отделение для самовывоза']
-            elif lang == 'en':
-                text = ['🏬 Choose a branch for pickup']
-            markup = await filial_keyboard(lang)
-            await state.update_data(card_type=cash_type)
-            await message.answer(f"{text[0]} 👇", reply_markup=markup)
-            await state.set_state("get_filial")
-            
-        # prices = []
-        # if message.text == "🔵 Click":
-        #     photo = 'https://click.uz/click/images/clickog.png'
-        #     token = '398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065'
-        # elif message.text == "🟢 Payme":
-        #     photo = "https://cdn.paycom.uz/documentation_assets/payme_01.png"
-        #     token = '371317599:TEST:1664877798422'
-        # prices.append(
-        #     types.LabeledPrice(label=f"Test uchun tanish", amount=int(1000) * 100))
-        # await bot.send_invoice(chat_id=message.from_user.id, title=f'Test title',
-        #                        description=f' Test description',
-        #                        provider_token=token,
-        #                        currency='UZS',
-        #                        photo_url=photo,
-        #                        photo_height=512,  # !=0/None or picture won't be shown
-        #                        photo_width=512,
-        #                        photo_size=512,
-        #                        prices=prices,
-        #                        start_parameter='hz-wto-tut',
-        #                        payload="Payload"
-        #                        )
-        # await state.set_state("payment")        
-
-
-@dp.message_handler(state="get_filial")
-async def get_count(message: types.Message, state: FSMContext):
-    lang = await get_lang(message.from_user.id)
-    if message.text in ["⬅ Orqaga", "⬅ Back", "⬅ Назад"]:
-        markup = await pay_method(lang)
-        if lang == "uz":
-            await message.answer("Iltimos to'lov usulini tanlang 👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("Please select a payment method 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("Пожалуйста, выберите способ оплаты 👇", reply_markup=markup)
-        await state.set_state("get_payment_method")
-    elif message.text in ["🏠 Asosiy menyu", "🏠 Main menu", "🏠 Главное меню"]:
-        lang = await get_lang(message.from_user.id)
         markup = await user_menu(lang)
         if lang == "uz":
-            await message.answer("Botimizga xush kelibsiz. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("Добро пожаловать в наш бот. Выберите нужный раздел👇", reply_markup=markup)
+            await message.answer("✅ Buyurtma qabul qilindi. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
         elif lang == "en":
-            await message.answer("Welcome to our bot. Please select the desired section 👇", reply_markup=markup)
+            await message.answer("✅ Order received. Choose the section you want 👇", reply_markup=markup)
+        elif lang == "ru":
+            await message.answer("✅ Заказ получен. Пожалуйста, выберите нужный раздел 👇", reply_markup=markup)
         await state.set_state("get_command")
-    else:
-        filil_name = message.text
-        filial = await get_filial_by_name(filil_name)
-        if filil_name is not None:
-            if lang == 'uz':
-                text = [f' {filial.filial_uz} ', "Manzilni tasdiqlaysizmi"]
-            elif lang == 'ru':
-                text = [f' {filial.filial_en} ', "Вы подтверждаете адрес?"]
-            elif lang == 'en':
-                text = [f' {filial.filial_ru} ', "Do you confirm the address?"]
-            markup = await confirmation_keyboard(lang)
-            await state.update_data(filial_id=filial.id)
-            await message.answer(f"📍{text[0]}", reply_markup=markup)
-            await message.answer(filial.location)
-            await message.answer(f"{text[1]} 👇")
-            await state.set_state("get_filial_corfirmation")
             
-
-@dp.message_handler(state="get_filial_corfirmation")
-async def get_count(message: types.Message, state: FSMContext):
-    lang = await get_lang(message.from_id)
-    if message.text in ["❌ Bekor qilish", "❌ Cancel", "❌ Отмена"]:
-        lang = await get_lang(message.from_user.id)
-        markup = await user_menu(lang)
-        if lang == "uz":
-            await message.answer("Botimizga xush kelibsiz. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("Добро пожаловать в наш бот. Выберите нужный раздел👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("Welcome to our bot. Please select the desired section 👇", reply_markup=markup)
-        await state.set_state("get_command")
-    elif message.text in ["✅ Tasdiqlash", "✅ Подтвердить", "✅ Confirm"]:
-        data = await state.get_data()
-        user = await get_user(message.from_user.id)
-        filial_id = data['filial_id']
-        filial = await get_filial(filial_id)
-        address = filial.filial_uz
-        card_type = data["card_type"]
-        date = datetime.datetime.now()
-        order = await add_order(user_id=message.from_id, date=date, address=address)
-        await state.update_data(order_id=order.id)
-        order.address = address
-        carts = await get_cart_objects(message.from_id)
-        for cart in carts:
-            await add_order_detail(order_id=order.id, product_id=cart.product.id, count=cart.count)
-        order_deails = await get_order_details(order.id) 
-        summa = 0
-        markup = await order_confirmation(lang)
-        if lang == "uz":
-            text = f"<b>🛒Sizning Buyurtmangiz</b>\n\n🆔 Buyurtma: <b>#{order.id}</b>\n"\
-            f"👤 Xaridor: <b>#{order.user.user_id}</b>\n🕙Buyurtma vaqti: {order.date.year}-{order.date.month}-{order.date.day}  {order.date.hour}:{order.date.minute}\n📍 Manzil: {order.address}\n"
-            for order_detail in order_deails:
-                text += f"      {order_detail.count}✖️{order_detail.product.name_uz}\n"
-                summa += order_detail.product.price * order_detail.count
-            text += f"\n<b>Jami: </b>{summa}"
-        elif lang == "ru":
-            text = f"<b>🛒Ваш заказ</b>\n\n🆔 Заказ: <b>#{order.id}</b>\n"\
-            f"👤 Заказчик: <b>#{order.user.user_id}</b>\n🕙Время заказа: {order.date.year}-{order.date.month}-{order.date.day}  {order.date.hour}:{order.date.minute}\n📍 Адрес: {order.address}\n"
-            for order_detail in order_deails:
-                text += f"      {order_detail.count}✖️{order_detail.product.name_ru}\n"
-                summa += order_detail.product.price * order_detail.count
-            text += f"\n<b>Jami: </b>{summa}"
-        elif lang == "en":
-            text = f"<b>🛒Your Order</b>\n\n🆔 Order: <b>#{order.id}</b>\n"\
-            f"👤 Customer: <b>#{order.user.user_id}</b>\n🕙Order date: {order.date.year}-{order.date.month}-{order.date.day}  {order.date.hour}:{order.date.minute}\n📍 Address: {order.address}\n"
-            for order_detail in order_deails:
-                text += f"      {order_detail.count}✖️{order_detail.product.name_uz}\n"
-                summa += order_detail.product.price * order_detail.count
-            text += f"\n<b>Jami: </b>{summa}"
-        order.summa = summa
-        order.pay_type = card_type
-        order.save()
-        await message.answer(text, reply_markup=markup)
-        await state.set_state("confirm_order")
 
 
 @dp.message_handler(content_types=types.ContentType.LOCATION, state='get_address')
@@ -1241,14 +928,15 @@ async def get_loc(message: types.Message, state: FSMContext):
                 text = '🗑 The address list is empty'
             await message.answer(text)
     elif message.text in ["⬅ Orqaga", "⬅ Back", "⬅ Назад"]:
-        markup = await pay_method(lang)
+        markup = await order_type(lang)
         if lang == "uz":
-            await message.answer("Iltimos to'lov usulini tanlang 👇", reply_markup=markup)
+            await bot.send_message(chat_id=message.from_user.id, text="Xizmat turini tanlang", reply_markup=markup)
         elif lang == "en":
-            await message.answer("Please select a payment method 👇", reply_markup=markup)
+            await bot.send_message(chat_id=message.from_user.id, text="Select the type of service", reply_markup=markup)
         elif lang == "ru":
-            await message.answer("Пожалуйста, выберите способ оплаты 👇", reply_markup=markup)
-        await state.set_state("get_payment_method")
+            await bot.send_message(chat_id=message.from_user.id, text="Выберите тип услуги", reply_markup=markup)
+        await state.set_state("get_service_type")
+
 
 @dp.message_handler(content_types=types.ContentType.TEXT, state='get_location')
 async def get_loc(message: types.Message, state: FSMContext):
@@ -1279,18 +967,21 @@ async def get_loc(message: types.Message, state: FSMContext):
         await bot.send_message(chat_id=message.from_user.id, text=text, reply_markup=markup)
         await state.set_state('confirm_address')
 
+
 @dp.message_handler(content_types=types.ContentType.TEXT, state='confirm_address')
 async def get_loc(message: types.Message, state: FSMContext):
     lang = await get_lang(message.from_id)
     if message.text in ["⬅ Orqaga", "⬅ Back", "⬅ Назад"]:
-        markup = await pay_method(lang)
-        if lang == "uz":
-            await message.answer("Iltimos to'lov usulini tanlang 👇", reply_markup=markup)
-        elif lang == "en":
-            await message.answer("Please select a payment method 👇", reply_markup=markup)
-        elif lang == "ru":
-            await message.answer("Пожалуйста, выберите способ оплаты 👇", reply_markup=markup)
-        await state.set_state("get_payment_method")
+        text = []
+        if lang == 'uz':
+            text = ['Yetkazish manzilini jo\'nating']
+        elif lang == 'ru':
+            text = ['Отправьте адрес доставки']
+        elif lang == 'en':
+            text = ['Please send your delivery address']
+        markup = await location_send(lang)
+        await message.answer(f"{text[0]} 👇", reply_markup=markup)
+        await state.set_state("get_address")
     elif message.text in ["✅ Tasdiqlash", "✅ Подтвердить", "✅ Confirm"]:
         data = await state.get_data()
         user = await get_user(message.from_user.id)
@@ -1298,44 +989,34 @@ async def get_loc(message: types.Message, state: FSMContext):
         longitude = data['longitude']
         loc_name = data['name']
         address = data['display_name']
-        card_type = data["card_type"]
+        color = data['color_id']
+        product = data['product_id']
+        gramm = data['massa_id']
         date = datetime.datetime.now()
-        order = await add_order(user_id=message.from_id, date=date, address=address)
+        order = await add_order(user_id=message.from_id, date=date, address=address, color=color, gramm=gramm, product=product)
         await state.update_data(order_id=order.id)
-        order.address = address
-        carts = await get_cart_objects(message.from_id)
-        for cart in carts:
-            await add_order_detail(order_id=order.id, product_id=cart.product.id, count=cart.count)
-        order_deails = await get_order_details(order.id) 
-        summa = 0
+        summa = order.product.price
         await add_address(latitude=latitude, longitude=longitude, user_id=message.from_user.id, name=loc_name)
-        markup = await order_confirmation(lang)
+        markup = await pay_method(lang)
         if lang == "uz":
             text = f"<b>🛒Sizning Buyurtmangiz</b>\n\n🆔 Buyurtma: <b>#{order.id}</b>\n"\
-            f"👤 Xaridor: <b>#{order.user.user_id}</b>\n🕙Buyurtma vaqti: {order.date.year}-{order.date.month}-{order.date.day}  {order.date.hour}:{order.date.minute}\n📍 Manzil: {order.address}\n"
-            for order_detail in order_deails:
-                text += f"  {order_detail.product.name_uz}✖️{order_detail.count}\n"
-                summa += order_detail.product.price * order_detail.count
-            text += f"\n<b>Jami: </b>{summa}"
+            f"👤 Xaridor: <b>#{order.user.user_id}</b>\nTelefon <b>+{order.user.phone}</b>\nBuyurtma: {order.product.name_uz} {order.color} {order.gramm}\nBuyurtma turi: Tekkazib berish\n📍 Manzil: {order.address}\n"
+            text += f"\n<b>Narxi: </b>{summa}v\n"
+            text += f"\nTo'lov turini tanlang 👇"
         elif lang == "ru":
             text = f"<b>🛒Ваш заказ</b>\n\n🆔 Заказ: <b>#{order.id}</b>\n"\
-            f"👤 Заказчик: <b>#{order.user.user_id}</b>\n🕙Время заказа: {order.date.year}-{order.date.month}-{order.date.day}  {order.date.hour}:{order.date.minute}\n📍 Адрес: {order.address}\n"
-            for order_detail in order_deails:
-                text += f"  {order_detail.product.name_ru}✖️{order_detail.count}\n"
-                summa += order_detail.product.price * order_detail.count
-            text += f"\n<b>Jami: </b>{summa}"
+            f"👤 Заказчик: <b>#{order.user.user_id}</b>\nТелефон <b>+{order.user.phone}</b>\nЗаказ: {order.product.name_uz} {order.color} {order.gramm}\nТип заказа: Доставка\n📍 Адрес: {order.address}\n"
+            text += f"\n<b>Цена: </b>{summa}"
+            text += f"\nВыберите тип оплаты 👇"
         elif lang == "en":
             text = f"<b>🛒Your Order</b>\n\n🆔 Order: <b>#{order.id}</b>\n"\
-            f"👤 Customer: <b>#{order.user.user_id}</b>\n🕙Order date: {order.date.year}-{order.date.month}-{order.date.day}  {order.date.hour}:{order.date.minute}\n📍 Address: {order.address}\n"
-            for order_detail in order_deails:
-                text += f"  {order_detail.product.name_en}✖️{order_detail.count}\n"
-                summa += order_detail.product.price * order_detail.count
-            text += f"\n<b>Jami: </b>{summa}"
+            f"👤 Customer: <b>#{order.user.user_id}</b>\nPhone <b>+{order.user.phone}</b>\nOrder: {order.product.name_uz} {order.color} {order.gramm}\nOrder Type: Delivery\n📍 Address: {order.address}\n"
+            text += f"\n<b>Price: </b>{summa}"
+            text += f"\nSelect the payment type 👇"
         order.summa = summa
-        order.pay_type = card_type
         order.save()
         await message.answer(text, reply_markup=markup)
-        await state.set_state("confirm_order")
+        await state.set_state("get_payment_method")
     elif message.text in ["🔄 Qayta jo\'natish", "🔄 Отправить повторно", "🔄 Send again"]:
         lang = await get_lang(message.from_user.id)
         text = []
@@ -1354,7 +1035,6 @@ async def get_loc(message: types.Message, state: FSMContext):
 async def get_loc(message: types.Message, state: FSMContext):
     lang = await get_lang(message.from_id)
     data = await state.get_data()
-    card_type = data["card_type"]
     if message.text in ["❌ Bekor qilish", "❌ Cancel", "❌ Отмена"]:
         await clear_cart(message.from_id)
         order_id = data['order_id']
@@ -1362,46 +1042,66 @@ async def get_loc(message: types.Message, state: FSMContext):
         order.delete()
         markup = await user_menu(lang)
         if lang == "uz":
-            await message.answer("🗑 Savatcha tozalandi. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
+            await message.answer("❌ Buyurtma bekor qilindi. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
         elif lang == "ru":
-            await message.answer("🗑 Корзина очищена. Выберите нужный раздел👇", reply_markup=markup)
+            await message.answer("❌ Заказ отменен. Пожалуйста, выберите нужный раздел 👇", reply_markup=markup)
         elif lang == "en":
-            await message.answer("🗑 Cart cleared. Please select the desired section 👇", reply_markup=markup)
+            await message.answer("❌ The order has been cancelled. Please select the desired section 👇", reply_markup=markup)
         await state.set_state("get_command")
-    elif message.text in ["✅ Подтвердить заказ", "✅ Buyurtmani tasdiqlash", "✅ Confirm order"]:
-        prices = []
-        if card_type != "cash":
-            if card_type == "click":
-                photo = 'https://click.uz/click/images/clickog.png'
-                token = '398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065'
-            elif message.text == "payme":
-                photo = "https://cdn.paycom.uz/documentation_assets/payme_01.png"
-                token = '371317599:TEST:1666271002702'
-            prices.append(
-                types.LabeledPrice(label=f"Test uchun tanish", amount=int(1000) * 100))
-            await bot.send_invoice(chat_id=message.from_user.id, title=f'Test title',
-                                description=f' Test description',
-                                provider_token=token,
-                                currency='UZS',
-                                photo_url=photo,
-                                photo_height=512,  # !=0/None or picture won't be shown
-                                photo_width=512,
-                                photo_size=512,
-                                prices=prices,
-                                start_parameter='hz-wto-tut',
-                                payload="Payload"
-                                )
-            await state.set_state("payment") 
-        else:   
-            await clear_cart(message.from_id)
+    elif message.text in ["✅ Подтвердить", "✅ Tasdiqlash", "✅ Confirm"]:
+        order_type = data["order_type"]
+        print("AAAAAAAAAA", order_type)
+        if order_type == "pick":
             markup = await user_menu(lang)
             if lang == "uz":
-                await message.answer("✔️ Buyurtma muvaffaqiyatli amalga oshirildi. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
-            elif lang == "ru":
-                await message.answer("✔️ Корзина очищена. Выберите нужный раздел👇", reply_markup=markup)
+                await message.answer("✅ Buyurtma qabul qilindi. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
             elif lang == "en":
-                await message.answer("✔️ Cart cleared. Please select the desired section 👇", reply_markup=markup)
+                await message.answer("✅ Order received. Choose the section you want 👇", reply_markup=markup)
+            elif lang == "ru":
+                await message.answer("✅ Заказ получен. Пожалуйста, выберите нужный раздел 👇", reply_markup=markup)
             await state.set_state("get_command")
+            
+        # markup = await pay_method(lang)
+        # if lang == "uz":
+        #     await message.answer("Iltimos to'lov usulini tanlang 👇", reply_markup=markup)
+        # elif lang == "en":
+        #     await message.answer("Please select a payment method 👇", reply_markup=markup)
+        # elif lang == "ru":
+        #     await message.answer("Пожалуйста, выберите способ оплаты 👇", reply_markup=markup)
+        # await state.set_state("get_payment_method")
+        # prices = []
+        # if card_type != "cash":
+        #     if card_type == "click":
+        #         photo = 'https://click.uz/click/images/clickog.png'
+        #         token = '398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065'
+        #     elif message.text == "payme":
+        #         photo = "https://cdn.paycom.uz/documentation_assets/payme_01.png"
+        #         token = '371317599:TEST:1666271002702'
+        #     prices.append(
+        #         types.LabeledPrice(label=f"Test uchun tanish", amount=int(1000) * 100))
+        #     await bot.send_invoice(chat_id=message.from_user.id, title=f'Test title',
+        #                         description=f' Test description',
+        #                         provider_token=token,
+        #                         currency='UZS',
+        #                         photo_url=photo,
+        #                         photo_height=512,  # !=0/None or picture won't be shown
+        #                         photo_width=512,
+        #                         photo_size=512,
+        #                         prices=prices,
+        #                         start_parameter='hz-wto-tut',
+        #                         payload="Payload"
+        #                         )
+        #     await state.set_state("payment") 
+        # else:   
+        #     await clear_cart(message.from_id)
+        #     markup = await user_menu(lang)
+        #     if lang == "uz":
+        #         await message.answer("✔️ Buyurtma muvaffaqiyatli amalga oshirildi. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
+        #     elif lang == "ru":
+        #         await message.answer("✔️ Корзина очищена. Выберите нужный раздел👇", reply_markup=markup)
+        #     elif lang == "en":
+        #         await message.answer("✔️ Cart cleared. Please select the desired section 👇", reply_markup=markup)
+        #     await state.set_state("get_command")
                    
         
 
@@ -1417,9 +1117,9 @@ async def got_payment(message: types.Message, state: FSMContext):
     await clear_cart(message.from_id)
     markup = await user_menu(lang)
     if lang == "uz":
-        await message.answer("✔️ Buyurtma muvaffaqiyatli amalga oshirildi. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
-    elif lang == "ru":
-        await message.answer("✔️ Корзина очищена. Выберите нужный раздел👇", reply_markup=markup)
+        await message.answer("✅ Buyurtma qabul qilindi. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
     elif lang == "en":
-        await message.answer("✔️ Cart cleared. Please select the desired section 👇", reply_markup=markup)
+        await message.answer("✅ Order received. Choose the section you want 👇", reply_markup=markup)
+    elif lang == "ru":
+        await message.answer("✅ Заказ получен. Пожалуйста, выберите нужный раздел 👇", reply_markup=markup)
     await state.set_state("get_command")

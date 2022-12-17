@@ -18,8 +18,7 @@ class User(models.Model):
     otp = models.CharField(max_length=20, null=True, blank=True)
     coins = models.IntegerField(default=0)
     orders = models.IntegerField(default=0)
-    
-    
+   
     
 class Category(models.Model):
     name_uz = models.CharField(max_length=500, null=True, blank=True)
@@ -38,16 +37,10 @@ class Category(models.Model):
             return ''
 
 
-class SubCategory(models.Model):
-    name_uz = models.CharField(max_length=500, null=True, blank=True)
-    name_en = models.CharField(max_length=500, null=True, blank=True)
-    name_ru = models.CharField(max_length=500, null=True, blank=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    image = models.ImageField(null=True, blank=True)
+class Color(models.Model):
+    color = models.CharField(max_length=50)
+    image = models.ImageField()
 
-    def __str__(self):
-        return self.name_uz
-    
     @property
     def ImageURL(self):
         try:
@@ -56,16 +49,19 @@ class SubCategory(models.Model):
             return ''
 
 
-class Color(models.Model):
-    color = models.CharField(max_length=50)
-    image = models.ImageField()
-
+class Massa(models.Model):
+    massa = models.IntegerField(default=0)
+    
+    def __str__(self):
+        return f"{self.massa}"
+    
 
 class Product(models.Model):
     name_uz = models.CharField(max_length=500, null=True, blank=True)
     name_en = models.CharField(max_length=500, null=True, blank=True)
     name_ru = models.CharField(max_length=500, null=True, blank=True)
-    colors = models.ManyToManyField(to=Color, null=True)
+    colors = models.ManyToManyField(to=Color)
+    weihgts = models.ManyToManyField(to=Massa)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     price = models.IntegerField(default=0)
     image = models.ImageField(null=True, blank=True)
@@ -87,6 +83,11 @@ class Order(models.Model):
         ("Click", 'click'),
         ("Cash", 'cash'),
     ]
+    STATUS =(    
+        ("vaiting", "VAITING"),
+        ("canceled", "CANCELED"),
+        ("confirmed", "CONFIRMED"),
+    )
 
     id = models.CharField(
         max_length=30,
@@ -94,13 +95,18 @@ class Order(models.Model):
         default=generateunique,
         editable=False
     )
+    
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     date = models.DateTimeField(auto_now_add=False)
     summa = models.IntegerField(default=0)
     pay_type = models.CharField(max_length=10, null=True, blank=True, choices=PAY_CHOISE)
     address = models.CharField(max_length=200, null=True, blank=True)
     service_type = models.CharField(max_length=25, null=True, blank=True)
-    paind = models.BooleanField(default=False)
+    paid = models.BooleanField(default=False)
+    product = models.ForeignKey(Product, null=True, on_delete=models.CASCADE)
+    status = models.CharField(max_length=100, null=True, blank=True, choices=STATUS, default="VAITING")
+    gramm = models.IntegerField(default=0)
+    color = models.CharField(max_length=200, null=True, blank=True)
 
 
 class OrderDetail(models.Model):
@@ -120,5 +126,4 @@ class Location(models.Model):
     user_id = models.CharField(max_length=400, verbose_name="User id", null=True)
     name = models.CharField(max_length=400, verbose_name="Name")
     longitude = models.CharField(max_length=400, verbose_name="Longitude")
-    latitude = models.CharField(max_length=400, verbose_name="Latitude")        
-    
+    latitude = models.CharField(max_length=400, verbose_name="Latitude")

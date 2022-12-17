@@ -187,6 +187,62 @@ async def product_keyboard(lang, cat_id):
     return markup
 
 
+async def color_keyboard(lang, product_id):
+    texts = []
+    product = Product.objects.get(id=product_id)
+    colors = product.colors.all()
+    markup = InlineKeyboardMarkup(row_width=2)
+    if colors:            
+        for i in colors:
+            if lang == "uz":
+                markup.insert(InlineKeyboardButton(text=f"{i.color}", callback_data=i.id))
+                texts = ["Orqaga"]
+            elif lang == "ru":
+                markup.insert(InlineKeyboardButton(text=f"{i.color}", callback_data=i.id))
+                texts = ["Назад"]
+            elif lang == "en":
+                markup.insert(InlineKeyboardButton(text=f"{i.color}", callback_data=i.id))
+                texts = ["Back"]
+        markup.add(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))
+    else:
+        if lang == "uz":
+            texts = ["Orqaga"]
+        elif lang == "ru":
+            texts = ["Назад"]
+        elif lang == "en":
+            texts = ["Back"]
+        markup.add(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))        
+    return markup
+
+
+async def massa_keyboard(lang, product_id):
+    texts = []
+    product = Product.objects.get(id=product_id)
+    weihgts = product.weihgts.all()
+    markup = InlineKeyboardMarkup(row_width=2)
+    if weihgts:            
+        for i in weihgts:
+            if lang == "uz":
+                markup.row(InlineKeyboardButton(text=f"{i.massa}", callback_data=i.id))
+                texts = ["Orqaga"]
+            elif lang == "ru":
+                markup.row(InlineKeyboardButton(text=f"{i.massa}", callback_data=i.id))
+                texts = ["Назад"]
+            elif lang == "en":
+                markup.row(InlineKeyboardButton(text=f"{i.massa}", callback_data=i.id))
+                texts = ["Back"]
+        markup.add(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))
+    else:
+        if lang == "uz":
+            texts = ["Orqaga"]
+        elif lang == "ru":
+            texts = ["Назад"]
+        elif lang == "en":
+            texts = ["Back"]
+        markup.add(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))        
+    return markup
+
+
 
 
 async def order_keyboard(cart_id, lang):
