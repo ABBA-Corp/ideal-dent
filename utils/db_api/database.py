@@ -7,7 +7,7 @@ from datetime import timedelta
 
 
 @sync_to_async
-def add_user(user_id, referal_user):
+def add_user(user_id, referal_user = None):
     try:
         user, created = User.objects.get_or_create(user_id=user_id)
         if user.referal_user:
@@ -52,6 +52,26 @@ def get_product(product_id):
     try:
         product = Product.objects.filter(id=product_id).first()
         return product
+    except Exception as exx:
+        print(exx)
+        return None
+
+
+@sync_to_async
+def get_subcategory(id):
+    try:
+        product = SubCategory.objects.filter(id=id).first()
+        return product
+    except Exception as exx:
+        print(exx)
+        return None
+
+
+@sync_to_async
+def get_massa(id):
+    try:
+        massa = Massa.objects.filter(id=id).first()
+        return massa
     except Exception as exx:
         print(exx)
         return None
@@ -267,15 +287,13 @@ def add_address(longitude, latitude, name, user_id):
 
 
 @sync_to_async
-def add_order(user_id, date, product, gramm, color, address=None):
+def add_order(user_id, date, product, gramm, address=None):
     try:
         user = User.objects.filter(user_id=user_id).first()
         product = Product.objects.get(id=product)
-        color = Color.objects.get(id=color)
         gramm = Massa.objects.get(id=gramm)
         order, created = Order.objects.get_or_create(user=user, date=date, address=address)
         order.product = product
-        order.color = color.color
         order.gramm = gramm.massa
         order.save()
         return order

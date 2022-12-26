@@ -129,27 +129,27 @@ async def order_type(lang):
 #     return keyboard
 
 
-async def subcategory_keyboard(lang, cat_id):
-    texts = []
-    categories = SubCategory.objects.filter(category_id=cat_id).all()
-    texts = []
-    size = len(categories)
-    keyboard = ReplyKeyboardMarkup()
-    for i in categories:
-        if lang == "uz":
-            texts = ["Asosiy menyu", "Orqaga"]
-            keyboard.add(KeyboardButton(text=f"{i.name_uz}"))
-        elif lang == "en":
-            texts = ["Main menu", "Back"]
-            keyboard.add(KeyboardButton(text=f"{i.name_en}"))
-        elif lang == "ru":
-            texts = ["Главное меню", "Назад"]
-            keyboard.add(KeyboardButton(text=f"{i.name_ru}"))
-    back_key = KeyboardButton(f"⬅ {texts[1]}")
-    home_key = KeyboardButton(f"🏠 {texts[0]}")
-    keyboard.add(back_key, home_key)  
-    keyboard.resize_keyboard = True
-    return keyboard
+# async def subcategory_keyboard(lang, cat_id):
+#     texts = []
+#     categories = SubCategory.objects.filter(category_id=cat_id).all()
+#     texts = []
+#     size = len(categories)
+#     keyboard = ReplyKeyboardMarkup()
+#     for i in categories:
+#         if lang == "uz":
+#             texts = ["Asosiy menyu", "Orqaga"]
+#             keyboard.add(KeyboardButton(text=f"{i.name_uz}"))
+#         elif lang == "en":
+#             texts = ["Main menu", "Back"]
+#             keyboard.add(KeyboardButton(text=f"{i.name_en}"))
+#         elif lang == "ru":
+#             texts = ["Главное меню", "Назад"]
+#             keyboard.add(KeyboardButton(text=f"{i.name_ru}"))
+#     back_key = KeyboardButton(f"⬅ {texts[1]}")
+#     home_key = KeyboardButton(f"🏠 {texts[0]}")
+#     keyboard.add(back_key, home_key)  
+#     keyboard.resize_keyboard = True
+#     return keyboard
 
 
 

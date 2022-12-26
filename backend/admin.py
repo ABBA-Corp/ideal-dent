@@ -5,6 +5,7 @@ from .models import *
 
 admin.site.register(User)
 admin.site.register(Category)
+admin.site.register(SubCategory)
 admin.site.register(Color)
 admin.site.register(Product)
 admin.site.register(Massa)

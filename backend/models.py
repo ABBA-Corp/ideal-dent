@@ -18,6 +18,7 @@ class User(models.Model):
     otp = models.CharField(max_length=20, null=True, blank=True)
     coins = models.IntegerField(default=0)
     orders = models.IntegerField(default=0)
+    cashback = models.IntegerField(default=0)
    
     
 class Category(models.Model):
@@ -25,6 +26,23 @@ class Category(models.Model):
     name_en = models.CharField(max_length=500, null=True, blank=True)
     name_ru = models.CharField(max_length=500, null=True, blank=True)
     image = models.ImageField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name_uz
+        
+    @property
+    def ImageURL(self):
+        try:
+            return self.image.url
+        except:
+            return ''
+
+class SubCategory(models.Model):
+    name_uz = models.CharField(max_length=500, null=True, blank=True)
+    name_en = models.CharField(max_length=500, null=True, blank=True)
+    name_ru = models.CharField(max_length=500, null=True, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
+    image = models.ImageField(null=True)
 
     def __str__(self):
         return self.name_uz
@@ -57,17 +75,17 @@ class Massa(models.Model):
     
 
 class Product(models.Model):
-    name_uz = models.CharField(max_length=500, null=True, blank=True)
-    name_en = models.CharField(max_length=500, null=True, blank=True)
-    name_ru = models.CharField(max_length=500, null=True, blank=True)
-    colors = models.ManyToManyField(to=Color)
+    name = models.CharField(max_length=500, null=True, blank=True)
     weihgts = models.ManyToManyField(to=Massa)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    subcategory = models.ForeignKey(SubCategory, on_delete=models.SET_NULL, null=True)
     price = models.IntegerField(default=0)
     image = models.ImageField(null=True, blank=True)
+    description_uz = models.CharField(max_length=500, null=True, blank=True)
+    description_en = models.CharField(max_length=500, null=True, blank=True)
+    description_ru = models.CharField(max_length=500, null=True, blank=True)
 
     def __str__(self):
-        return self.name_uz
+        return self.name
     
     @property
     def ImageURL(self):
@@ -106,7 +124,6 @@ class Order(models.Model):
     product = models.ForeignKey(Product, null=True, on_delete=models.CASCADE)
     status = models.CharField(max_length=100, null=True, blank=True, choices=STATUS, default="VAITING")
     gramm = models.IntegerField(default=0)
-    color = models.CharField(max_length=200, null=True, blank=True)
 
 
 class OrderDetail(models.Model):
