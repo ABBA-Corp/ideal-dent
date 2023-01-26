@@ -3,7 +3,6 @@ from aiogram.dispatcher.filters.builtin import CommandStart
 from aiogram.dispatcher import FSMContext
 from keyboards.inline.main_inline import *
 from keyboards.inline.menu_button import *
-from utils.db_api import database as commands
 from loader import dp, bot
 from utils.db_api.database import *
 import datetime
@@ -13,6 +12,8 @@ from aiogram.types import InlineQuery, \
     InputTextMessageContent, InlineQueryResultPhoto, InputMediaPhoto, InlineQueryResultArticle
 from aiogram.utils.deep_linking import decode_payload, get_start_link
 import re
+import random
+import requests
 
 
 def isValid(s):
@@ -22,6 +23,15 @@ def isValid(s):
 
 def generateOTP():
     return random.randint(111111, 999999)
+
+
+def send_sms(otp, phone):
+    username = "idealdent"
+    password = "(k5BS#7&Duu2"
+    sms_data = {
+        "messages":[{"recipient":f"{phone}","message-id":"abc000000003","sms":{"originator": "3700","content": {"text": f"Sizning Ideal Dent botida ro'yxatdan o'tish kodingiz: {otp}"}}}]}
+    url = "http://91.204.239.44/broker-api/send"
+    res = requests.post(url=url, headers={}, auth=(username, password), json=sms_data)
 
 
 @dp.message_handler(lambda message: message.text in ["🏠 Asosiy menyu", "🏠 Main menu", "🏠 Главное меню"], state='*')
@@ -136,7 +146,7 @@ async def get_phone(message: types.Message, state: FSMContext):
         user = await get_user(message.from_user.id)
         user.new_phone = phone
         otp = generateOTP()
-        # send_sms(otp=otp, phone=phone)
+        send_sms(otp=otp, phone=phone)
         user.otp = otp
         user.save()
         print(user.otp)
@@ -187,7 +197,7 @@ async def get_phone(message: types.Message, state: FSMContext):
             user = await get_user(message.from_user.id)
             user.new_phone = phone
             otp = generateOTP()
-            # send_sms(otp=otp, phone=phone)
+            send_sms(otp=otp, phone=phone)
             user.otp = otp
             user.save()
             print(user.otp)
@@ -389,7 +399,7 @@ async def get_phone(message: types.Message, state: FSMContext):
         user = await get_user(message.from_user.id)
         user.new_phone = phone
         otp = generateOTP()
-        # send_sms(otp=otp, phone=phone)
+        send_sms(otp=otp, phone=phone)
         user.otp = otp
         user.save()
         print(user.otp)
@@ -413,7 +423,7 @@ async def get_phone_settings(message: types.Message, state: FSMContext):
             user = await get_user(message.from_user.id)
             user.new_phone = phone
             otp = generateOTP()
-            # send_sms(otp=otp, phone=phone)
+            send_sms(otp=otp, phone=phone)
             user.otp = otp
             user.save()
             print(user.otp)
@@ -658,11 +668,11 @@ async def get_category(call: types.CallbackQuery, state:FSMContext):
         text = ""
         price = massa.massa * product.price
         if lang == "uz":
-            text = f"{product.subcategory.name_uz} model {product.name}.\nMiqdor: {massa.massa}\nNarxi: {price}"
+            text = f"{product.subcategory.name_uz} model {product.name}.\nMiqdor: {massa.massa} gr\nNarxi: {price}"
         if lang == "ru":
-            text = f"{product.subcategory.name_ru} model {product.name}.\nMiqdor: {massa.massa}\nPrice: {price}"
+            text = f"{product.subcategory.name_ru} model {product.name}.\nКоличество: {massa.massa} гр\nЦена: {price}"
         if lang == "en":
-            text = f"{product.subcategory.name_en} model {product.name}.\nMiqdor: {massa.massa}\nЦена: {price}"
+            text = f"{product.subcategory.name_en} model {product.name}.\nAmount: {massa.massa} gr\nPrice: {price}"
         await call.message.delete()
         await bot.send_message(chat_id=call.from_user.id, text=text, reply_markup=markup)
 
@@ -828,7 +838,7 @@ async def get_count(message: types.Message, state: FSMContext):
             token = '398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065'
         elif message.text == "🟢 Payme":
             photo = "https://cdn.paycom.uz/documentation_assets/payme_01.png"
-            token = '371317599:TEST:1664877798422'
+            token = '371317599:TEST:1672062523890'
         prices.append(
             types.LabeledPrice(label=f"Test uchun tanish", amount=int(1000) * 100))
         await bot.send_invoice(chat_id=message.from_user.id, title=f'Test title',

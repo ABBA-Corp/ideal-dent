@@ -163,19 +163,22 @@ async def category_keyboard(lang):
 async def product_keyboard(lang, cat_id):
     texts = []
     products = Product.objects.filter(subcategory__id=cat_id).all()
-    markup = InlineKeyboardMarkup(row_width=2)
+    markup = InlineKeyboardMarkup(row_width=3)
     if products:            
+        if lang == "uz":
+            texts = ["Orqaga"]
+        elif lang == "ru":
+            texts = ["Назад"]
+        elif lang == "en":
+            texts = ["Back"]
+        markup.row(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))
         for i in products:
             if lang == "uz":
                 markup.insert(InlineKeyboardButton(text=f"{i.name}", callback_data=i.id))
-                texts = ["Orqaga"]
             elif lang == "ru":
                 markup.insert(InlineKeyboardButton(text=f"{i.name}", callback_data=i.id))
-                texts = ["Назад"]
             elif lang == "en":
                 markup.insert(InlineKeyboardButton(text=f"{i.name}", callback_data=i.id))
-                texts = ["Back"]
-        markup.add(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))
     else:
         if lang == "uz":
             texts = ["Orqaga"]
@@ -250,13 +253,13 @@ async def massa_keyboard(lang, product_id):
     if weihgts:            
         for i in weihgts:
             if lang == "uz":
-                markup.row(InlineKeyboardButton(text=f"{i.massa}", callback_data=i.id))
+                markup.row(InlineKeyboardButton(text=f"{i.massa} gr", callback_data=i.id))
                 texts = ["Orqaga"]
             elif lang == "ru":
-                markup.row(InlineKeyboardButton(text=f"{i.massa}", callback_data=i.id))
+                markup.row(InlineKeyboardButton(text=f"{i.massa} гр", callback_data=i.id))
                 texts = ["Назад"]
             elif lang == "en":
-                markup.row(InlineKeyboardButton(text=f"{i.massa}", callback_data=i.id))
+                markup.row(InlineKeyboardButton(text=f"{i.massa} gr", callback_data=i.id))
                 texts = ["Back"]
         markup.add(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))
     else:
