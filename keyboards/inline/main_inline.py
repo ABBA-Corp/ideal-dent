@@ -162,7 +162,7 @@ async def category_keyboard(lang):
 
 async def product_keyboard(lang, cat_id):
     texts = []
-    products = Product.objects.filter(subcategory__id=cat_id).all()
+    products = Product.objects.filter(subsubcategory__id=cat_id).all()
     markup = InlineKeyboardMarkup(row_width=3)
     if products:            
         if lang == "uz":
@@ -214,6 +214,33 @@ async def subcategory_keyboard(lang, cat_id):
         elif lang == "en":
             texts = ["Back"]
         markup.add(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))        
+    return markup
+
+
+async def sub_subcategory_keyboard(lang, cat_id):
+    texts = []
+    products = SubSubCategory.objects.filter(category__id=cat_id).all()
+    markup = InlineKeyboardMarkup(row_width=2)
+    if products:
+        for i in products:
+            if lang == "uz":
+                markup.insert(InlineKeyboardButton(text=f"{i.name_uz}", callback_data=i.id))
+                texts = ["Orqaga"]
+            elif lang == "ru":
+                markup.insert(InlineKeyboardButton(text=f"{i.name_ru}", callback_data=i.id))
+                texts = ["Назад"]
+            elif lang == "en":
+                markup.insert(InlineKeyboardButton(text=f"{i.name_en}", callback_data=i.id))
+                texts = ["Back"]
+        markup.add(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))
+    else:
+        if lang == "uz":
+            texts = ["Orqaga"]
+        elif lang == "ru":
+            texts = ["Назад"]
+        elif lang == "en":
+            texts = ["Back"]
+        markup.add(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))
     return markup
 
 

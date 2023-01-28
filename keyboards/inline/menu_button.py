@@ -50,11 +50,11 @@ async def phone_keyboard(lang):
 async def user_menu(lang):
     texts = []
     if lang == "uz":
-        texts = ["Mahsulotlar", "Sozlamalar", "Biz haqimizda", "Aloqa va manzillar", "Keshbeklar haqida ma'lumot", "Bonus"]
+        texts = ["Mahsulotlar", "Sozlamalar", "Biz haqimizda", "Aloqa va manzillar", "Keshbeklar haqida ma'lumot", "Bonus", "Buyurtmalar tarixi"]
     elif lang == "en":
-        texts = ["Products", "Settings", "About us", "Contact and addresses", "Information about cashbacks", "Bonus"]
+        texts = ["Products", "Settings", "About us", "Contact and addresses", "Information about cashbacks", "Bonus", "Order history"]
     elif lang == "ru":
-        texts = ["Продукты", "Настройки", "О нас", "Контакты и адреса", "Информация о кэшбэках", "Бонус"]
+        texts = ["Продукты", "Настройки", "О нас", "Контакты и адреса", "Информация о кэшбэках", "Бонус", "История заказов"]
 
     keyboard = ReplyKeyboardMarkup()
     key1 = KeyboardButton(text=f"🛍 {texts[0]}")
@@ -63,9 +63,11 @@ async def user_menu(lang):
     key4 = KeyboardButton(text=f"📞 {texts[3]}")
     key5 = KeyboardButton(text=f"💰 {texts[4]}")
     key6 = KeyboardButton(text=f"💎 {texts[5]}")
+    key7 = KeyboardButton(text=f"🗂 {texts[6]}")
     keyboard.add(key1)
     keyboard.add(key5, key6, key2)
     keyboard.add(key3, key4)
+    keyboard.add(key7)
     keyboard.resize_keyboard = True
     keyboard.one_time_keyboard = True
     return keyboard
@@ -333,11 +335,11 @@ async def confirmation_keyboard(lang):
 async def buy_keyboard(lang):
     texts = []
     if lang == "uz":
-        texts = ["Sotib olish", "Orqaga"]
+        texts = ["Korzinaga qo'shish", "Orqaga"]
     elif lang == "en":
-        texts = ["Buy", "Back"]
+        texts = ["Add to cart", "Back"]
     elif lang == "ru":
-        texts = ["Купить", "Назад"]
+        texts = ["Добавить в корзину", "Назад"]
 
     keyboard = ReplyKeyboardMarkup()
     key1 = KeyboardButton(text=f"🛒 {texts[0]}")
@@ -345,6 +347,44 @@ async def buy_keyboard(lang):
     keyboard.add(key1, key2)
     keyboard.resize_keyboard = True
     return keyboard
+
+
+async def prod_detail_kb(def_quan, lang):
+    prod = InlineKeyboardMarkup(row_width=3)
+    prod.row(InlineKeyboardButton('-', callback_data='card_quan_remove'),
+             InlineKeyboardButton(f'{def_quan}', callback_data=f'{def_quan}'),
+             InlineKeyboardButton('+', callback_data='card_quan_add'))
+    if lang == "uz":
+        prod.insert(InlineKeyboardButton('📥 Savatga qo\'shish ✅', callback_data='add_card'))
+        prod.add(InlineKeyboardButton('⬅️  Ortga', callback_data='add_card_back'),
+                 InlineKeyboardButton('📥 Savat', callback_data='kor_det'))
+    elif lang == "uz":
+        prod.insert(InlineKeyboardButton('📥 Добавить в корзину ✅', callback_data='add_card'))
+        prod.add(InlineKeyboardButton('⬅️  Назад', callback_data='add_card_back'),
+                 InlineKeyboardButton('📥 Kорзина', callback_data='kor_det'))
+    elif lang == "en":
+        prod.insert(InlineKeyboardButton('📥 Add to cart ✅', callback_data='add_card'))
+        prod.add(InlineKeyboardButton('⬅️  Back', callback_data='add_card_back'),
+                 InlineKeyboardButton('📥 Cart', callback_data='kor_det'))
+    return prod
+
+
+async def card_kb(lang):
+    card = InlineKeyboardMarkup(row_width=1)
+    if lang == 'uz':
+        card.add(InlineKeyboardButton('✅ Tasdiqlash', callback_data='btn_conf'),
+                 InlineKeyboardButton('🔄 Savatni tozalash', callback_data='btn_clear'),
+                 InlineKeyboardButton('⬅️  Ortga', callback_data='back_cart'))
+    elif lang == 'ru':
+        card.add(InlineKeyboardButton('✅ Подтвердить заказ', callback_data='btn_conf'),
+                 InlineKeyboardButton('🔄 Очистить', callback_data='btn_clear'),
+                 InlineKeyboardButton('⬅️  Назад', callback_data='back_cart'))
+    elif lang == 'en':
+        card.add(InlineKeyboardButton('✅ Confirm order', callback_data='btn_conf'),
+                 InlineKeyboardButton('🔄 Clear cart', callback_data='btn_clear'),
+                 InlineKeyboardButton('⬅️  back', callback_data='back_cart'))
+    return card
+
 
 
 # async def confirm_keyboard():

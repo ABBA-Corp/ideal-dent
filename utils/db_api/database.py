@@ -68,6 +68,16 @@ def get_subcategory(id):
 
 
 @sync_to_async
+def get_subsubcategory(id):
+    try:
+        product = SubSubCategory.objects.filter(id=id).first()
+        return product
+    except Exception as exx:
+        print(exx)
+        return None
+
+
+@sync_to_async
 def get_massa(id):
     try:
         massa = Massa.objects.filter(id=id).first()
@@ -93,13 +103,19 @@ def get_weihgts(product_id):
 
 
 @sync_to_async
-def add_cart(user, product):
+def add_cart(user, product, quan, gramm):
     try:
         cart, created = CartObject.objects.get_or_create(
             user=user,
-            product=product
+            product=product,
+            gramm=gramm
         )
-        cart.save()
+        if created:
+            cart.count = quan
+            cart.save()
+        else:
+            cart.count += quan
+            cart.save()
         return cart
     except Exception as exx:
          print(exx)
@@ -107,13 +123,23 @@ def add_cart(user, product):
 
 
 @sync_to_async
-def get_cart(cart_id):
+def get_cart(user):
     try:
-        cart = CartObject.objects.filter(id=cart_id).first()
+        cart = CartObject.objects.filter(user=user)
         return cart
     except Exception as exx:
         print(exx)
         return None
+
+
+@sync_to_async
+def clear_carts(user):
+    try:
+        CartObject.objects.filter(user=user).delete()
+        return True
+    except Exception as exx:
+        print(exx)
+        return False
 
 
 @sync_to_async
@@ -287,14 +313,10 @@ def add_address(longitude, latitude, name, user_id):
 
 
 @sync_to_async
-def add_order(user_id, date, product, gramm, address=None):
+def add_order(user_id, date, summa, address=None):
     try:
         user = User.objects.filter(user_id=user_id).first()
-        product = Product.objects.get(id=product)
-        gramm = Massa.objects.get(id=gramm)
-        order, created = Order.objects.get_or_create(user=user, date=date, address=address)
-        order.product = product
-        order.gramm = gramm.massa
+        order, created = Order.objects.get_or_create(user=user, date=date, summa=summa,address=address)
         order.save()
         return order
     except Exception as exx:
@@ -303,13 +325,15 @@ def add_order(user_id, date, product, gramm, address=None):
 
 
 @sync_to_async
-def add_order_detail(order_id, product_id, count):
+def add_order_detail(cart, order):
     try:
-        product = Product.objects.filter(id=product_id).first()
-        order = Order.objects.filter(id=order_id).first()
-        order_object, created = OrderDetail.objects.get_or_create(order=order, product=product, count=count)
-        order_object.save()
-        return order_object
+        order_details = ''
+        for i, h in enumerate(cart, 1):
+            product = Product.objects.filter(id=h.product.id).first()
+            OrderDetail.objects.create(order=order, product=product, count=h.count, gramm=h.gramm)
+            order_details += f'{i}. {product.name} {h.gramm} gr  x  {h.count}\n'
+        print(order_details)
+        return order_details
     except Exception as exx:
         print(exx)
         return None

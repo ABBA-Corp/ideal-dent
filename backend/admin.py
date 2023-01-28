@@ -4,8 +4,12 @@ from .models import *
 
 
 admin.site.register(User)
+admin.site.register(Order)
+admin.site.register(OrderDetail)
+admin.site.register(CartObject)
 admin.site.register(Category)
 admin.site.register(SubCategory)
+admin.site.register(SubSubCategory)
 admin.site.register(Color)
 admin.site.register(Product)
 admin.site.register(Massa)

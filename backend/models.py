@@ -37,6 +37,7 @@ class Category(models.Model):
         except:
             return ''
 
+
 class SubCategory(models.Model):
     name_uz = models.CharField(max_length=500, null=True, blank=True)
     name_en = models.CharField(max_length=500, null=True, blank=True)
@@ -47,6 +48,24 @@ class SubCategory(models.Model):
     def __str__(self):
         return self.name_uz
         
+    @property
+    def ImageURL(self):
+        try:
+            return self.image.url
+        except:
+            return ''
+
+
+class SubSubCategory(models.Model):
+    name_uz = models.CharField(max_length=500, null=True, blank=True)
+    name_en = models.CharField(max_length=500, null=True, blank=True)
+    name_ru = models.CharField(max_length=500, null=True, blank=True)
+    category = models.ForeignKey(SubCategory, on_delete=models.SET_NULL, null=True)
+    image = models.ImageField(null=True)
+
+    def __str__(self):
+        return self.name_uz
+
     @property
     def ImageURL(self):
         try:
@@ -78,6 +97,7 @@ class Product(models.Model):
     name = models.CharField(max_length=500, null=True, blank=True)
     weihgts = models.ManyToManyField(to=Massa)
     subcategory = models.ForeignKey(SubCategory, on_delete=models.SET_NULL, null=True)
+    subsubcategory = models.ForeignKey(SubSubCategory, on_delete=models.SET_NULL, null=True)
     price = models.IntegerField(default=0)
     image = models.ImageField(null=True, blank=True)
     description_uz = models.CharField(max_length=500, null=True, blank=True)
@@ -101,7 +121,7 @@ class Order(models.Model):
         ("Click", 'click'),
         ("Cash", 'cash'),
     ]
-    STATUS =(    
+    STATUS = (
         ("vaiting", "VAITING"),
         ("canceled", "CANCELED"),
         ("confirmed", "CONFIRMED"),
@@ -121,21 +141,21 @@ class Order(models.Model):
     address = models.CharField(max_length=200, null=True, blank=True)
     service_type = models.CharField(max_length=25, null=True, blank=True)
     paid = models.BooleanField(default=False)
-    product = models.ForeignKey(Product, null=True, on_delete=models.CASCADE)
     status = models.CharField(max_length=100, null=True, blank=True, choices=STATUS, default="VAITING")
-    gramm = models.IntegerField(default=0)
 
 
 class OrderDetail(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     count = models.IntegerField()
+    gramm = models.ForeignKey(Massa, on_delete=models.CASCADE)
 
 
 class CartObject(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    count = models.IntegerField(default=1)    
+    count = models.IntegerField(default=1)
+    gramm = models.ForeignKey(Massa, on_delete=models.CASCADE)
     confirm = models.BooleanField(default=False)
 
 
