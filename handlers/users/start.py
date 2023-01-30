@@ -274,19 +274,30 @@ async def get_user_command(message: types.Message, state: FSMContext):
         lang = await get_lang(message.from_user.id)
         markup = await about_menu(lang)
         if lang == "uz":
-            await message.answer("Aloqa uchun raqamlar\n+998999410325\n+998999410325\nBizni ijtimoiy tarmoqlarda kuzating 👇", reply_markup=markup)
+            await message.answer("Aloqa uchun raqam\n+998998131391\nBizni ijtimoiy tarmoqlarda kuzating 👇",
+                                 reply_markup=markup)
         elif lang == "en":
-            await message.answer("Contact numbers\n+998999410325\n+998999410325\nFollow us on social networks 👇", reply_markup=markup)
+            await message.answer("Contact number\n+998998131391\nFollow us on social networks 👇", reply_markup=markup)
         elif lang == "ru":
-            await message.answer("Контактные телефоны\n+998999410325\n+998999410325\nПодпишитесь на нас в социальных сетях 👇", reply_markup=markup)
+            await message.answer("Контактный телефон\n+998998131391\nПодпишитесь на нас в социальных сетях 👇",
+                                 reply_markup=markup)
+        markup = await user_menu(lang)
+        dels = await message.answer('.', reply_markup=markup)
     elif command in ["ℹ️ Biz haqimizda", "ℹ️ About us", "ℹ️ О нас"]:
         markup = await user_menu(lang)
         if lang == "uz":
-            await message.answer(text="Biz keramika sohasidagi korxonamiz. 2005 yildan beri faoliyatimizni yuritamizBizdan kerkli maxsulotlar xariq qilishingiz mumkin.", reply_markup=markup)
+            await message.answer(
+                text="IDEAL-DENT kompaniyasi 2006 yilda tashkil etilgan. Shu vaqt ichida biz stomatologiya bozorida etakchi o\'rinlardan birini egalladik va turli sohalarda hamkorlik bo\'yicha boy tajriba to\'pladik. Kompaniyamiz uch yo\'nalishda faoliyat yuritadi. Bizning ishimizdagi asosiy vazifa - mijozlarimizga yo\'qolgan yoshligimiz va sog\'lig\'imizni qaytarish va ularga chiroyli tabassum berishdir! Sog\'lom tishlar va chiroyli tabassum hayot davomida o\'ziga ishonch va farovonlikning kalitidir.",
+                reply_markup=markup)
         elif lang == "ru":
-            await message.answer(text="Мы предприятие в области керамики. Мы работаем с 2005 года. У нас вы можете купить специальные товары.", reply_markup=markup)
+            await message.answer(
+                text="Компания IDEAL-DENT была создана в 2006 году. За это время мы заняли одну из лидирующих позиций на стоматологическом рынке и накопили богатый опыт сотрудничества по различным направлениям. Наша компания ведет деятельность в трех направлениях. Основная задача в нашей работе — вернуть нашим клиентам утраченную молодость и здоровье, и подарить им красивую улыбку! Здоровые зубы и красивая улыбка – залог уверенности в себе и хорошего самочувствия на протяжении всей жизни.",
+                reply_markup=markup)
         elif lang == "en":
-            await message.answer(text="We are an enterprise in the field of ceramics. We have been operating since 2005. You can buy special products from us.", reply_markup=markup)
+            await message.answer(
+                text="The company IDEAL-DENT was founded in 2006. During this time, we have taken one of the leading positions in the dental market and have accumulated rich experience in cooperation in various areas. Our company operates in three areas. The main task in our work is to restore our lost youth and health to our clients, and give them a beautiful smile! Healthy teeth and a beautiful smile are the key to self-confidence and well-being throughout life.",
+                reply_markup=markup)
+
     elif command in ["🛍 Mahsulotlar", "🛍 Products", "🛍 Продукты"]:
         markup = await category_keyboard(lang)
         if lang == "uz":
