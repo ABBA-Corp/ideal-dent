@@ -54,16 +54,16 @@ from utils.db_api.database import *
 async def about_menu(lang):
     texts = []
     if lang == "uz":
-        texts = [ "Facebook", "Site", "Instagram", "Orqaga"]
+        texts = ["Facebook", "Site", "Instagram", "Orqaga"]
     elif lang == "en":
-        texts = [ "Facebook", "Site", "Instagram", "Back"]
+        texts = ["Facebook", "Site", "Instagram", "Back"]
     elif lang == "ru":
-        texts = [ "Facebook", "Сайт", "Instagram", "Назад"]
+        texts = ["Facebook", "Сайт", "Instagram", "Назад"]
     markup = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text=f"{texts[1]}", url="https://www.facebook.com/dunyabunya.uz")],
-            [InlineKeyboardButton(text=f"{texts[2]}", url="https://ideal-dent.uz/")],
-            [InlineKeyboardButton(text=f" {texts[3]}", url="https://www.instagram.com/ideal_dent_lab/")],
+            [InlineKeyboardButton(text=f"{texts[0]}", url="https://www.facebook.com/dunyabunya.uz")],
+            [InlineKeyboardButton(text=f"{texts[1]}", url="https://ideal-dent.uz/")],
+            [InlineKeyboardButton(text=f" {texts[2]}", url="https://www.instagram.com/ideal_dent_lab/")],
         ]
     )
     return markup
