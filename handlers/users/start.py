@@ -14,6 +14,7 @@ from aiogram.utils.deep_linking import decode_payload, get_start_link
 import re
 import random
 import requests
+from data import config
 
 
 def isValid(s):
@@ -282,7 +283,7 @@ async def get_user_command(message: types.Message, state: FSMContext):
             await message.answer("Контактный телефон\n+998998131391\nПодпишитесь на нас в социальных сетях 👇",
                                  reply_markup=markup)
         markup = await user_menu(lang)
-        dels = await message.answer('.', reply_markup=markup)
+        dels = await message.answer('Kerakli bo’limni tanlang 👆', reply_markup=markup)
     elif command in ["ℹ️ Biz haqimizda", "ℹ️ About us", "ℹ️ О нас"]:
         markup = await user_menu(lang)
         if lang == "uz":
@@ -777,18 +778,22 @@ async def add_to_card(call: types.CallbackQuery, state: FSMContext):
             await bot.send_message(chat_id=call.from_user.id, text="Выберите нужную кнопку 👇", reply_markup=markup)
         await state.set_state("get_command")
     elif call.data == 'add_card':
+        texts = []
         if lang == "uz":
-            text = "Tovar korzinaga qo\'shilidi"
+            texts = ["Tovar korzinaga qo\'shilidi", '"Kerakli maxsulotni tanlang 👇"']
         if lang == "ru":
-            text = "Товары успешно добавлены в корзину!"
+            texts = ["Товары успешно добавлены в корзину!", "Выберите нужный товар 👇"]
         if lang == "en":
-            text = "Product added to cart"
+            texts = ["Product added to cart", "Choose the desired product 👇"]
         massa = await get_massa(pars['massa_id'])
         await add_cart(user, product, pars['prod_quan'], massa)
-        await call.answer(text=text, show_alert=True)
+        markup = await product_keyboard(lang=lang, cat_id=pars['subsubcategory_id'])
+        await call.message.edit_text(texts[1], reply_markup=markup)
+        await call.answer(text=texts[0])
+        await state.set_state("get_product")
 
 
-@dp.callback_query_handler(Text(equals="kor_det"), state="cart_man")
+@dp.callback_query_handler(Text(equals="kor_det"), state=["cart_man", "get_product"])
 async def add_to_card(call: types.CallbackQuery, state: FSMContext):
     lang = await get_lang(call.from_user.id)
     user = await get_user(call.from_user.id)
@@ -964,17 +969,17 @@ async def get_command_about(message: types.Message, state: FSMContext):
         if lang == "uz":
             text = f"<b>🛒Sizning Buyurtmangiz</b>\n\n🆔 Buyurtma: <b>#{order.id}</b>\n"\
             f"👤 Xaridor: <b>#{order.user.user_id}</b>\nTelefon <b>+{order.user.phone}</b>\nBuyurtma:\n{details}\nBuyurtma turi: Yetkazib berish\n📍 Manzil: {order.address}\n"
-            text += f"\n<b>Narxi: </b>{price} UZS  Keshbek {cashback} UZS\n Umumiy summa: {summa}"
+            text += f"\n<b>Narxi: </b>{price} UZS\n Umumiy summa: {summa}"
             text += f"\nBuyurtmani tasdiqlang 👇"
         elif lang == "ru":
             text = f"<b>🛒Ваш заказ</b>\n\n🆔 Заказ: <b>#{order.id}</b>\n"\
             f"👤 Заказчик: <b>#{order.user.user_id}</b>\nТелефон <b>+{order.user.phone}</b>\nЗаказ: \n{details}\nТип заказа: Доставка\n📍 Адрес: {order.address}\n"
-            text += f"<b>Цена: </b>{price} сум Кэшбэк {cashback} сум\n Общая сумма: {summa}"
+            text += f"<b>Цена: </b>{price} сум\n Общая сумма: {summa}"
             text += f"\nПодтвердите заказ 👇"
         elif lang == "en":
             text = f"<b>🛒Your Order</b>\n\n🆔 Order: <b>#{order.id}</b>\n"\
             f"👤 Customer: <b>#{order.user.user_id}</b>\nPhone <b>+{order.user.phone}</b>\nOrder: \n{details}\nOrder Type: Delivery\n📍 Address: {order.address}\n"
-            text += f"<b>Price: </b>{price} UZS Cashback {cashback} UZS\n Total amount: {summa}"
+            text += f"<b>Price: </b>{price} UZS\n Total amount: {summa}"
             text += f"\nConfirm the order 👇"
         order.summa = summa
         order.save()
@@ -1004,7 +1009,6 @@ async def get_command_about(message: types.Message, state: FSMContext):
 @dp.message_handler(state="get_payment_method")
 async def get_count(message: types.Message, state: FSMContext):
     lang = await get_lang(message.from_user.id)
-    data = await state.get_data()
     user = await get_user(message.from_user.id)
     if message.text in ["⬅ Orqaga", "⬅ Back", "⬅ Назад"]:
         markup = await order_type(lang)
@@ -1046,8 +1050,10 @@ async def get_count(message: types.Message, state: FSMContext):
                                )
         await state.set_state("payment")
 
-    elif message.text in ["💴 Naqd pul orqali", "💴 Наличными", "💴 Cash"]:
+    elif message.text in ["✅ Tasdiqlash", "✅ Подтвердить", "✅ Confirm"]:
         markup = await user_menu(lang)
+        data = await state.get_data()
+        order = await get_order(data["order_id"])
         if lang == "uz":
             await message.answer("✅ Buyurtma qabul qilindi. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
         elif lang == "en":
@@ -1055,6 +1061,11 @@ async def get_count(message: types.Message, state: FSMContext):
         elif lang == "ru":
             await message.answer("✅ Заказ получен. Пожалуйста, выберите нужный раздел 👇", reply_markup=markup)
         await clear_carts(user)
+        await bot.send_message(chat_id=config.GROUPS_ID,
+                               text=f"<b> 🛒Yangi buyurtma</b>\n\n🆔 Buyurtma: <b>#{order.id}</b>\n" \
+                                    f"👤 Xaridor: <b>#{order.user.user_id}</b>\nTelefon <b>+{order.user.phone}</b>\nBuyurtma: \n{data['details']}\nBuyurtma turi: Yetkazib berish\n📍 Manzil: {order.address}\n"
+                                    f"\n Umumiy summa: {data['total_price']}")
+
         await state.set_state("get_command")
 
 
@@ -1192,18 +1203,19 @@ async def get_loc(message: types.Message, state: FSMContext):
         if lang == "uz":
             text = f"<b>🛒Sizning Buyurtmangiz</b>\n\n🆔 Buyurtma: <b>#{order.id}</b>\n"\
             f"👤 Xaridor: <b>#{order.user.user_id}</b>\nTelefon <b>+{order.user.phone}</b>\nBuyurtma: \n{details}\nBuyurtma turi: Yetkazib berish\n📍 Manzil: {order.address}\n"
-            text += f"\n<b>Narxi: </b>{price} UZS  Keshbek {cashback} UZS\n Umumiy summa: {summa}"
+            text += f"\n<b>Narxi: </b>{price} UZS \n Umumiy summa: {summa}"
             text += f"\nTo'lov turini tanlang 👇"
         elif lang == "ru":
             text = f"<b>🛒Ваш заказ</b>\n\n🆔 Заказ: <b>#{order.id}</b>\n"\
             f"👤 Заказчик: <b>#{order.user.user_id}</b>\nТелефон <b>+{order.user.phone}</b>\nЗаказ: \n{details}\nТип заказа: Доставка\n📍 Адрес: {order.address}\n"
-            text += f"<b>Цена: </b>{price} сум Кэшбэк {cashback} сум\n Общая сумма: {summa}"
+            text += f"<b>Цена: </b>{price} сум \n Общая сумма: {summa}"
             text += f"\nВыберите тип оплаты 👇"
         elif lang == "en":
             text = f"<b>🛒Your Order</b>\n\n🆔 Order: <b>#{order.id}</b>\n"\
             f"👤 Customer: <b>#{order.user.user_id}</b>\nPhone <b>+{order.user.phone}</b>\nOrder: \n{details}\nOrder Type: Delivery\n📍 Address: {order.address}\n"
-            text += f"<b>Price: </b>{price} UZS Cashback {cashback} UZS\n Total amount: {summa}"
+            text += f"<b>Price: </b>{price} UZS \n Total amount: {summa}"
             text += f"\nSelect the payment type 👇"
+        await state.update_data(details=details)
         order.summa = summa
         order.save()
         await message.answer(text, reply_markup=markup)
@@ -1254,8 +1266,12 @@ async def get_loc(message: types.Message, state: FSMContext):
                 await message.answer("✅ Buyurtma qabul qilindi. Iltimos kerakli bo'limni tanlang 👇", reply_markup=markup)
             elif lang == "en":
                 await message.answer("✅ Order received. Choose the section you want 👇", reply_markup=markup)
+
             elif lang == "ru":
                 await message.answer("✅ Заказ получен. Пожалуйста, выберите нужный раздел 👇", reply_markup=markup)
+            await bot.send_message(chat_id=config.GROUPS_ID, text=f"<b> 🛒Yangi buyurtma</b>\n\n🆔 Buyurtma: <b>#{order.id}</b>\n" \
+                                                                  f"👤 Xaridor: <b>#{order.user.user_id}</b>\nTelefon <b>+{order.user.phone}</b>\nBuyurtma: \n{data['details']}\nBuyurtma turi: Olib ketish\n"
+                                                                  f"\n Umumiy summa: {data['total_price']}")
             await clear_carts(user)
             await state.set_state("get_command")
 

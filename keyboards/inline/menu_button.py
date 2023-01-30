@@ -210,19 +210,16 @@ async def cart_keyboard(lang, user_id):
 async def pay_method(lang):
     texts = []
     if lang == "uz":
-        texts = ["Click", "Payme", "Naqd pul orqali" , "Orqaga"]
+        texts = ["Buyurtmani tasdiqlash", "Bekor qilish"]
     elif lang == "en":
-        texts = ["Click", "Payme", "Cash", "Back"]
+        texts = ["Confirm order", "Cancel"]
     elif lang == "ru":
-        texts = ["Click", "Payme", "Наличными", "Назад"]
+        texts = ["Подтвердить заказ", "Отмена"]
 
     keyboard = ReplyKeyboardMarkup()
-    key1 = KeyboardButton(text=f"🔵 {texts[0]}")
-    key2 = KeyboardButton(text=f"🟢 {texts[1]}")
-    key3 = KeyboardButton(text=f"💴 {texts[2]}")
-    key4 = KeyboardButton(text=f"⬅ {texts[3]}")
-    keyboard.add(key1, key2, key3)
-    keyboard.add(key4)
+    key1 = KeyboardButton(text=f"✅ {texts[0]}")
+    key2 = KeyboardButton(text=f"❌ {texts[1]}")
+    keyboard.add(key1, key2)
     keyboard.resize_keyboard = True
     return keyboard
 

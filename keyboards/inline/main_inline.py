@@ -165,12 +165,12 @@ async def product_keyboard(lang, cat_id):
     markup = InlineKeyboardMarkup(row_width=3)
     if products:            
         if lang == "uz":
-            texts = ["Orqaga"]
+            texts = ["Orqaga", "📥 Savat"]
         elif lang == "ru":
-            texts = ["Назад"]
+            texts = ["Назад", "📥 Корзина"]
         elif lang == "en":
-            texts = ["Back"]
-        markup.row(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))
+            texts = ["Back", '📥 Cart']
+        markup.row(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"), InlineKeyboardButton(text=texts[1], callback_data='cor_det'))
         for i in products:
             if lang == "uz":
                 markup.insert(InlineKeyboardButton(text=f"{i.name}", callback_data=i.id))
