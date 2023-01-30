@@ -793,7 +793,7 @@ async def add_to_card(call: types.CallbackQuery, state: FSMContext):
         await state.set_state("get_product")
 
 
-@dp.callback_query_handler(Text(equals="kor_det"), state=["cart_man", "get_product"])
+@dp.callback_query_handler(Text(equals="kor_det"), state=["cart_man", "get_category"])
 async def add_to_card(call: types.CallbackQuery, state: FSMContext):
     lang = await get_lang(call.from_user.id)
     user = await get_user(call.from_user.id)

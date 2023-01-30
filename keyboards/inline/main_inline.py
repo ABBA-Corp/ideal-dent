@@ -143,18 +143,26 @@ async def go_order(lang):
 
 async def category_keyboard(lang):
     texts = []
+    textss = []
     categories = Category.objects.all()
-    markup = InlineKeyboardMarkup(row_width=2)            
+    markup = InlineKeyboardMarkup(row_width=2)
+    if lang == "uz":
+        textss = ["📥 Savat"]
+    elif lang == "ru":
+        textss = ["📥 Корзина"]
+    elif lang == "en":
+        textss = ['📥 Cart']
+    markup.row(InlineKeyboardButton(text=textss[0], callback_data='kor_det'))
     for i in categories:
         if lang == "uz":
             markup.insert(InlineKeyboardButton(text=f"{i.name_uz}", callback_data=i.id))
-            texts = ["Orqaga"]
+            texts = ["Orqaga", "📥 Savat"]
         elif lang == "ru":
             markup.insert(InlineKeyboardButton(text=f"{i.name_ru}", callback_data=i.id))
-            texts = ["Назад"]
+            texts = ["Назад", "📥 Корзина"]
         elif lang == "en":
             markup.insert(InlineKeyboardButton(text=f"{i.name_en}", callback_data=i.id))
-            texts = ["Back"]
+            texts = ["Back", '📥 Cart']
     markup.add(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))
     return markup
 
@@ -170,7 +178,7 @@ async def product_keyboard(lang, cat_id):
             texts = ["Назад", "📥 Корзина"]
         elif lang == "en":
             texts = ["Back", '📥 Cart']
-        markup.row(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"), InlineKeyboardButton(text=texts[1], callback_data='cor_det'))
+        markup.row(InlineKeyboardButton(text=f"🔙 {texts[0]}", callback_data=f"back"))
         for i in products:
             if lang == "uz":
                 markup.insert(InlineKeyboardButton(text=f"{i.name}", callback_data=i.id))
