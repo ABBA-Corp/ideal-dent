@@ -9,6 +9,7 @@ GROUPS_ID = str(os.getenv("GROUPS_ID")).split(" ")
 DATABASE = str(os.getenv("DATABASE"))
 PGUSER = str(os.getenv("PGUSER"))
 PGPASSWORD = str(os.getenv("PGPASSWORD"))
+SENTRY_DSN = str(os.getenv("SENTRY_DSN"))
 ADMIN = str(os.getenv("ADMIN")).split(" ")
 SLEEP_TIME = .3
 
