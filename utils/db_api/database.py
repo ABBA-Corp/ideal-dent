@@ -337,7 +337,21 @@ def add_order_detail(cart, order):
     except Exception as exx:
         print(exx)
         return None
-    
+
+@sync_to_async
+def get_order_detail(cart, order):
+    try:
+        order_details = ''
+        for i, h in enumerate(cart, 1):
+            product = Product.objects.filter(id=h.product.id).first()
+            OrderDetail.objects.get(order=order, product=product, count=h.count, gramm=h.gramm)
+            order_details += f'{i}. {product.name} {h.gramm} gr  x  {h.count}\n'
+        print(order_details)
+        return order_details
+    except Exception as exx:
+        print(exx)
+        return None
+
     
 @sync_to_async
 def get_order_details(order_id):
