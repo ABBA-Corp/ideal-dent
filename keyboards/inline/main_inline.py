@@ -143,16 +143,8 @@ async def go_order(lang):
 
 async def category_keyboard(lang):
     texts = []
-    textss = []
     categories = Category.objects.all()
     markup = InlineKeyboardMarkup(row_width=2)
-    if lang == "uz":
-        textss = ["📥 Savat"]
-    elif lang == "ru":
-        textss = ["📥 Корзина"]
-    elif lang == "en":
-        textss = ['📥 Cart']
-    markup.row(InlineKeyboardButton(text=textss[0], callback_data='kor_det'))
     for i in categories:
         if lang == "uz":
             markup.insert(InlineKeyboardButton(text=f"{i.name_uz}", callback_data=i.id))
@@ -226,8 +218,16 @@ async def subcategory_keyboard(lang, cat_id):
 
 async def sub_subcategory_keyboard(lang, cat_id):
     texts = []
+    textss = []
     products = SubSubCategory.objects.filter(category__id=cat_id).all()
     markup = InlineKeyboardMarkup(row_width=2)
+    if lang == "uz":
+        textss = ["📥 Savat"]
+    elif lang == "ru":
+        textss = ["📥 Корзина"]
+    elif lang == "en":
+        textss = ['📥 Cart']
+    markup.row(InlineKeyboardButton(text=textss[0], callback_data='kor_det'))
     if products:
         for i in products:
             if lang == "uz":
