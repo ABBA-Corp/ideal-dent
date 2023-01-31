@@ -1008,17 +1008,17 @@ async def get_command_about(message: types.Message, state: FSMContext):
         text = ''
         if lang == "uz":
             text = f"<b>🛒Sizning Buyurtmangiz</b>\n\n🆔 Buyurtma: <b>#{order.id}</b>\n"\
-            f"👤 Xaridor: <b>#{order.user.user_id}</b>\nTelefon <b>+{order.user.phone}</b>\nBuyurtma:\n{details}\nBuyurtma turi: Yetkazib berish\n📍 Manzil: {order.address}\n"
+            f"👤 Xaridor: <b>#{order.user.user_id}</b>\nTelefon <b>+{order.user.phone}</b>\nBuyurtma:\n{details}\nBuyurtma turi: Olib ketish\n📍 Manzil: {order.address}\n"
             text += f"\n<b>Narxi: </b>{price} UZS\n Umumiy summa: {summa}"
             text += f"\nBuyurtmani tasdiqlang 👇"
         elif lang == "ru":
-            text = f"<b>🛒Ваш заказ</b>\n\n🆔 Заказ: <b>#{order.id}</b>\n"\
-            f"👤 Заказчик: <b>#{order.user.user_id}</b>\nТелефон <b>+{order.user.phone}</b>\nЗаказ: \n{details}\nТип заказа: Доставка\n📍 Адрес: {order.address}\n"
             text += f"<b>Цена: </b>{price} сум\n Общая сумма: {summa}"
+            text = f"<b>🛒Ваш заказ</b>\n\n🆔 Заказ: <b>#{order.id}</b>\n"\
+            f"👤 Заказчик: <b>#{order.user.user_id}</b>\nТелефон <b>+{order.user.phone}</b>\nЗаказ: \n{details}\nТип заказа: Самовывоз\n📍 Адрес: {order.address}\n"
             text += f"\nПодтвердите заказ 👇"
         elif lang == "en":
             text = f"<b>🛒Your Order</b>\n\n🆔 Order: <b>#{order.id}</b>\n"\
-            f"👤 Customer: <b>#{order.user.user_id}</b>\nPhone <b>+{order.user.phone}</b>\nOrder: \n{details}\nOrder Type: Delivery\n📍 Address: {order.address}\n"
+            f"👤 Customer: <b>#{order.user.user_id}</b>\nPhone <b>+{order.user.phone}</b>\nOrder: \n{details}\nOrder Type: Pick\n📍 Address: {order.address}\n"
             text += f"<b>Price: </b>{price} UZS\n Total amount: {summa}"
             text += f"\nConfirm the order 👇"
         order.summa = summa
