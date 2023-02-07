@@ -35,7 +35,7 @@ def send_sms(otp, phone):
         "messages":[{"recipient":f"{phone}","message-id":"abc000000003","sms":{"originator": "3700","content": {"text": f"Sizning Ideal Dent botida ro'yxatdan o'tish kodingiz: {otp}"}}}]}
     url = "http://91.204.239.44/broker-api/send"
     res = requests.post(url=url, headers={}, auth=(username, password), json=sms_data)
-    logging.info(res.json())
+
 
 
 @dp.message_handler(lambda message: message.text in ["🏠 Asosiy menyu", "🏠 Main menu", "🏠 Главное меню"], state='*')
@@ -145,24 +145,23 @@ async def get_name(message: types.Message, state: FSMContext):
 
 @dp.message_handler(content_types=types.ContentTypes.CONTACT, state="get_phone_number")
 async def get_phone(message: types.Message, state: FSMContext):
-    if message.contact:
-        phone = message.contact.phone_number[1:]
-        user = await get_user(message.from_user.id)
-        user.new_phone = phone
-        otp = generateOTP()
-        send_sms(otp=otp, phone=phone)
-        user.otp = otp
-        user.save()
-        print(user.otp)
-        lang = await get_lang(message.from_user.id)
-        keyboard = await back_keyboard(lang)
-        if lang == "uz":
-            await message.answer(text=f"<b>{user.new_phone}</b> raqamiga yuborilgan tasdiqlash kodini kiriting", parse_mode='HTML', reply_markup=keyboard)
-        if lang == "ru":
-            await message.answer(text=f"Введите код подтверждения, отправленный на номер <b>{user.new_phone}</b>.", parse_mode='HTML', reply_markup=keyboard)
-        if lang == "en":
-            await message.answer(text=f"Enter the verification code sent to <b>{user.new_phone}</b>", parse_mode='HTML', reply_markup=keyboard)
-        await state.set_state("get_otp")
+    phone = message.contact.phone_number[1:]
+    user = await get_user(message.from_user.id)
+    user.new_phone = phone
+    otp = generateOTP()
+    send_sms(otp=otp, phone=phone)
+    user.otp = otp
+    user.save()
+    logging.info(user.otp)
+    lang = await get_lang(message.from_user.id)
+    keyboard = await back_keyboard(lang)
+    if lang == "uz":
+        await message.answer(text=f"<b>{user.new_phone}</b> raqamiga yuborilgan tasdiqlash kodini kiriting", parse_mode='HTML', reply_markup=keyboard)
+    if lang == "ru":
+        await message.answer(text=f"Введите код подтверждения, отправленный на номер <b>{user.new_phone}</b>.", parse_mode='HTML', reply_markup=keyboard)
+    if lang == "en":
+        await message.answer(text=f"Enter the verification code sent to <b>{user.new_phone}</b>", parse_mode='HTML', reply_markup=keyboard)
+    await state.set_state("get_otp")
 
 
 @dp.message_handler(content_types=types.ContentTypes.TEXT, state="get_phone_number")
