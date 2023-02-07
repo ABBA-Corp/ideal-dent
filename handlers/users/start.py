@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import types
 from aiogram.dispatcher.filters.builtin import CommandStart, Text
 from aiogram.dispatcher import FSMContext
@@ -32,7 +34,8 @@ def send_sms(otp, phone):
     sms_data = {
         "messages":[{"recipient":f"{phone}","message-id":"abc000000003","sms":{"originator": "3700","content": {"text": f"Sizning Ideal Dent botida ro'yxatdan o'tish kodingiz: {otp}"}}}]}
     url = "http://91.204.239.44/broker-api/send"
-    requests.post(url=url, headers={}, auth=(username, password), json=sms_data)
+    res = requests.post(url=url, headers={}, auth=(username, password), json=sms_data)
+    logging.info(res.json())
 
 
 @dp.message_handler(lambda message: message.text in ["🏠 Asosiy menyu", "🏠 Main menu", "🏠 Главное меню"], state='*')
