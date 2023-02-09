@@ -150,9 +150,9 @@ async def get_phone(message: types.Message, state: FSMContext):
     user = await get_user(message.from_user.id)
     user.new_phone = phone
     otp = generateOTP()
-    await message.answer(text=str(phone))
+    # await message.answer(text=str(phone))
     mss = send_sms(otp=otp, phone=phone)
-    await message.answer(text=str(mss))
+    # await message.answer(text=str(mss))
     user.otp = otp
     user.save()
     logging.info(user.otp)
